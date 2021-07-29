@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         ADP Enhanced!
+// @name         ADP Enhanced
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js

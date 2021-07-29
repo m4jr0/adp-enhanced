@@ -301,7 +301,7 @@ class AdpEnhancedUpdater:
 
 def main():
     try:
-        parser = argparse.ArgumentParser(description="Update ADP Enhanced!")
+        parser = argparse.ArgumentParser(description="Update ADP Enhanced")
 
         parser.add_argument(
             "-b",
