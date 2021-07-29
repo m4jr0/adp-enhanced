@@ -1,0 +1,4 @@
+gitdb==4.0.7
+GitPython==3.1.18
+in-place==0.5.0
+smmap==4.0.0
