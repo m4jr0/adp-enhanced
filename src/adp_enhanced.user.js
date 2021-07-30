@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.2.11.0
+// @version      0.2.12.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -1277,12 +1277,14 @@ function handleInputOnHours (event) {
     if (hours <= 9) {
       rawValue = insertTextToString(rawValue, ':', 1)
     }
-  } else if (rawValue.length >= 3) {
+  } else if (rawValue.length === 3) {
     if (hours <= 9) {
       rawValue = insertTextToString(rawValue, ':', 1)
     } else {
       rawValue = insertTextToString(rawValue, ':', 2)
     }
+  } else {
+    rawValue = insertTextToString(rawValue, ':', 2)
   }
 
   if (keyCode === 38 || keyCode === 40) {
