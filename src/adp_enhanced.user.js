@@ -970,25 +970,17 @@ function validateWorkHours (value, modifiedElement) {
   let isBlank = false
 
   const newHoursValues = []
-
   const rawValue = modifiedElement.value
 
   if (rawValue && rawValue.length >= 1) {
-    let hours
+    const values = rawValue.split(':')
+    const hours = parseInt(values[0])
     let minutes
 
-    if (rawValue.length === 1) { // x
-      hours = parseInt(rawValue[0])
+    if (values.length > 0) {
+      minutes = parseInt(values[1])
+    } else {
       minutes = 0
-    } else if (rawValue.length === 2) { // xy
-      hours = parseInt(`${rawValue[0]}${rawValue[1]}`)
-      minutes = 0
-    } else if (rawValue.length === 4) { // xy:z.
-      hours = parseInt(`${rawValue[0]}${rawValue[1]}`)
-      minutes = parseInt(rawValue[3])
-    } else { // wx:yz.
-      hours = parseInt(`${rawValue[0]}${rawValue[1]}`)
-      minutes = parseInt(`${rawValue[3]}${rawValue[4]}`)
     }
 
     modifiedElement.value = getNormalizedDaytimeString(hours, minutes)
@@ -1038,7 +1030,7 @@ function validateWorkHours (value, modifiedElement) {
         if (isModifiedElement) {
           modifiedElement.value = ''
         } else {
-          element.innerText = previousValue
+          element.innerText = ''
           element.style.color = MODIFIED_COLOR_HOURS_CSS
         }
 
@@ -1253,10 +1245,7 @@ function handleInputOnHours (event) {
 
   let rawValue = event.currentTarget.value.replace(/[^0-9]/i, '')
 
-  if (rawValue.length < 3) {
-    event.currentTarget.value = rawValue
-    return
-  } else if (rawValue.length > 4) {
+  if (rawValue.length > 4) {
     rawValue = rawValue.slice(0, 4)
   }
 
@@ -1264,15 +1253,36 @@ function handleInputOnHours (event) {
   let minutes
 
   if (rawValue.length === 3) {
-    hours = parseInt(rawValue[0])
-    minutes = parseInt(`${rawValue[1]}${rawValue[2]}`)
+    if (rawValue[0] === '1' || rawValue[0] === '2') {
+      hours = parseInt(`${rawValue[0]}${rawValue[1]}`)
+      minutes = parseInt(rawValue[2])
+    } else {
+      hours = parseInt(rawValue[0])
+      minutes = parseInt(`${rawValue[1]}${rawValue[2]}`)
+    }
+  } else if (rawValue.length === 2) {
+    if (rawValue[0] === '1' || rawValue[0] === '2') {
+      hours = parseInt(`${rawValue[0]}${rawValue[1]}`)
+      minutes = parseInt(`${rawValue[2]}${rawValue[3]}`)
+    } else {
+      hours = parseInt(rawValue[0])
+      minutes = parseInt(`${rawValue[1]}${rawValue[2]}`)
+    }
   } else {
     hours = parseInt(`${rawValue[0]}${rawValue[1]}`)
     minutes = parseInt(`${rawValue[2]}${rawValue[3]}`)
   }
 
-  if (rawValue.length >= 3) {
-    rawValue = insertTextToString(rawValue, ':', 2)
+  if (rawValue.length === 2) {
+    if (hours <= 9) {
+      rawValue = insertTextToString(rawValue, ':', 1)
+    }
+  } else if (rawValue.length >= 3) {
+    if (hours <= 9) {
+      rawValue = insertTextToString(rawValue, ':', 1)
+    } else {
+      rawValue = insertTextToString(rawValue, ':', 2)
+    }
   }
 
   if (keyCode === 38 || keyCode === 40) {
@@ -2934,7 +2944,7 @@ function setUpDebugPanel () {
 }
 
 // Display first panel when opening for the first time.
-function welcomeUser() {
+function welcomeUser () {
   if (localStorage.getItem(LAST_VERSION_KEY) === ADP_ENHANCED_VERSION) {
     return
   }
