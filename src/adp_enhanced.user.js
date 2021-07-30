@@ -1283,7 +1283,7 @@ function handleInputOnHours (event) {
     } else {
       rawValue = insertTextToString(rawValue, ':', 2)
     }
-  } else {
+  } else if (rawValue.length === 4) {
     rawValue = insertTextToString(rawValue, ':', 2)
   }
 
