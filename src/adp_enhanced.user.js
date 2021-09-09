@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.3.0.0
+// @version      0.3.1.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -65,7 +65,7 @@ const END_NOTIFICATION_CHECKBOX_DEFAULT_VALUE = false
 const COUNTER_SIZE_CSS = '1.4em'
 const ORIGINAL_COLOR_HOURS_CSS = 'black'
 const MODIFIED_COLOR_HOURS_CSS = 'blue'
-const DAYS_OFF_TAGS = ['RV', 'CS']
+const DAYS_OFF_TAGS = ['RV', 'CS', 'CP']
 const NATIONAL_HOLIDAY_TAGS = ['JF']
 const HOUR_ELEMENT_EMPTY_DEFAULT_VALUE = '&nbsp;'
 const HOUR_ELEMENT_EMPTY_VALUES = [
@@ -2990,17 +2990,7 @@ function handleWelcomeAcceptButton () {
 function getChangelog () {
   return `<h3>Changelog :</h3>
   <ul>
-    <li>Suppression de l'option pour l'estimation des heures supplémentaires avec le delta journalier.</li>
-    <li>Renommage de certains labels pour une meilleure compréhension de leur signification.</li>
-    <li>Amélioration des limitations horaires covidiennes (qui sont actuellement prises en compte entre le 21 juillet et le 30 septembre 2021).</li>
-    <li>Amélioration de la gestion des heures entrées manuellement : le comportement est plus intuitif.</li>
-    <li>Correction de la couleur du delta pour le label « Delta journalier cumulé 🥐 : ».</li>
-    <li>Ajout de l'utilisation des raccourcis <b>TAB</b> et <b>SHIFT+TAB</b> pour passer d'une horaire à une autre lorsqu'on modifie ces dernières.</li>
-    <li>Ajout des notifications lorsqu'une heure de fin a été atteinte (pour le moment, il faut garder l'onglet ouvert pour que ça marche. À voir pour la suite).</li>
-      <ul>
-        <li>Si on clique sur une notification, la page pour pointer s'affiche (il faut avoir autorisé les popups sur le site pour que ça fonctionne).</li>
-      </ul>
-    <li>Ajout des mises à jour automatiques.</li>
+    <li>Prise en compte des congés payés dans le calcul des horaires.</li>
   </ul>
 `
 }
