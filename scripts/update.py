@@ -317,15 +317,16 @@ def main():
         parser.add_argument(
             "-v",
             "--version",
-            help="specify the version to set",
+            help="specify the version to set (optional)",
             required=False,
         )
 
         parser.add_argument(
             "-s",
             "--silent",
-            help="whether to bypass confirmations or not",
+            help="whether to bypass confirmations or not (optional)",
             action="store_true",
+            required=False,
         )
 
         args = parser.parse_args()

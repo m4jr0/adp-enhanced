@@ -160,7 +160,7 @@ LOCAL_STORAGE_TYPES[DEBUG_ACTUAL_HOURS_KEY] = 'string'
 const now = getNow()
 const ARE_COVID_HOURS_1 = now >= new Date(2021, 6, 21, 0, 0, 0, 0) &&
   now < new Date(2021, 8, 30, 0, 0, 0, 0)
-const ARE_COVID_HOURS_2 = now >= new Date(2021, 12, 6, 0, 0, 0, 0)
+const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0)
 
 // REGEX.
 const TOKEN_REGEX = /c=[a-z0-9]+/
