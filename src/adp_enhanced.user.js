@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.3.1.0
+// @version      0.3.2.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -158,8 +158,9 @@ LOCAL_STORAGE_TYPES[DEBUG_ACTUAL_HOURS_KEY] = 'string'
 
 // Misc.
 const now = getNow()
-const ARE_COVID_HOURS = now >= new Date(2021, 6, 21, 0, 0, 0, 0) &&
+const ARE_COVID_HOURS_1 = now >= new Date(2021, 6, 21, 0, 0, 0, 0) &&
   now < new Date(2021, 8, 30, 0, 0, 0, 0)
+const ARE_COVID_HOURS_2 = now >= new Date(2021, 12, 6, 0, 0, 0, 0)
 
 // REGEX.
 const TOKEN_REGEX = /c=[a-z0-9]+/
@@ -225,8 +226,8 @@ const AFTERNOON_TIME = convertToSeconds(
   { hours: AFTERNOON_HOURS, minutes: AFTERNOON_MINUTES }
 )
 
-const MINIMUM_BEGINNING_WORKING_HOURS = ARE_COVID_HOURS ? 7 : 8
-const MINIMUM_BEGINNING_WORKING_MINUTES = ARE_COVID_HOURS ? 30 : 0
+const MINIMUM_BEGINNING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 7 : 8
+const MINIMUM_BEGINNING_WORKING_MINUTES = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 30 : 0
 const MINIMUM_BEGINNING_WORKING_TIME = convertToSeconds(
   {
     hours: MINIMUM_BEGINNING_WORKING_HOURS,
@@ -234,7 +235,7 @@ const MINIMUM_BEGINNING_WORKING_TIME = convertToSeconds(
   }
 )
 
-const MINIMUM_LEAVING_WORKING_HOURS = ARE_COVID_HOURS ? 16 : 17
+const MINIMUM_LEAVING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 16 : 17
 const MINIMUM_LEAVING_WORKING_MINUTES = 0
 const MINIMUM_LEAVING_WORKING_TIME = convertToSeconds(
   {
@@ -243,14 +244,14 @@ const MINIMUM_LEAVING_WORKING_TIME = convertToSeconds(
   }
 )
 
-const MAXIMUM_WORKING_HOURS = ARE_COVID_HOURS ? 20 : 19
+const MAXIMUM_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 20 : 19
 const MAXIMUM_WORKING_MINUTES = 0
 const MAXIMUM_WORKING_TIME = convertToSeconds(
   { hours: MAXIMUM_WORKING_HOURS, minutes: MAXIMUM_WORKING_MINUTES }
 )
 
-const MINIMUM_LUNCH_BREAK_HOURS = 1
-const MINIMUM_LUNCH_BREAK_MINUTES = 0
+const MINIMUM_LUNCH_BREAK_HOURS = ARE_COVID_HOURS_2 ? 0 : 1
+const MINIMUM_LUNCH_BREAK_MINUTES = ARE_COVID_HOURS_2 ? 30 : 0
 const MINIMUM_LUNCH_BREAH_TIME = convertToSeconds(
   { hours: MINIMUM_LUNCH_BREAK_HOURS, minutes: MINIMUM_LUNCH_BREAK_MINUTES }
 )
@@ -2991,6 +2992,13 @@ function getChangelog () {
   return `<h3>Changelog :</h3>
   <ul>
     <li>Prise en compte des congés payés dans le calcul des horaires.</li>
+    <li>Prise en compte des nouveaux horaires variables (Covid) à partir du <b>6 décembre 2021</b>.</li>
+      <ul>
+        <li>Arrivée entre <b>7:30</b> et <b>10:00</b>.</li>
+        <li>Départ entre <b>16:00</b> et <b>20:00</b>.</li>
+        <li>Plage déjeuner entre <b>11:30</b> et <b>14:30</b>.</li>
+        <li>La pause déjeuner est de <b>30 minutes minimum</b>.</li>
+      </ul>
   </ul>
 `
 }
