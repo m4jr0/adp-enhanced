@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.3.2.0
+// @version      0.3.3.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -90,6 +90,7 @@ const dailyWorkedTime = {}
 let currentMondayObj = getMondayTimeObjOfCurrentAdpWeek()
 let hoursInputBaseValue = null
 let extraHoursAdded = 0
+let overtimeCompensationTime = 0
 
 let globalCounterHours = 0
 let globalCounterMinutes = 0
@@ -1439,6 +1440,7 @@ function addWorkedHours () {
   let cumulatedDeltaTotalSeconds = 0
   let currentGlobalCounterTime = getBeginningOfTheWeekExtraTime()
   extraHoursAdded = 0
+  overtimeCompensationTime = 0
 
   let currentDay = getNow().getDay()
 
@@ -1460,6 +1462,10 @@ function addWorkedHours () {
     if (DAYS_OFF_TAGS.includes(morningTag)) {
       totalDayOffSeconds += MORNING_TIME
       currentTotalSeconds += MORNING_TIME
+
+      if (morningTag === 'RV') {
+        overtimeCompensationTime += MORNING_TIME
+      }
     } else if (NATIONAL_HOLIDAY_TAGS.includes(morningTag)) {
       totalNationalHolidaySeconds += MORNING_TIME
       currentTotalSeconds += MORNING_TIME
@@ -1468,6 +1474,10 @@ function addWorkedHours () {
     if (DAYS_OFF_TAGS.includes(afternoonTag)) {
       totalDayOffSeconds += AFTERNOON_TIME
       currentTotalSeconds += AFTERNOON_TIME
+
+      if (afternoonTag === 'RV') {
+        overtimeCompensationTime += AFTERNOON_TIME
+      }
     } else if (NATIONAL_HOLIDAY_TAGS.includes(afternoonTag)) {
       totalNationalHolidaySeconds += AFTERNOON_TIME
       currentTotalSeconds += AFTERNOON_TIME
@@ -1582,6 +1592,8 @@ function addWorkedHours () {
   if (currentGlobalCounterTime < estimatedExtraHoursEndWeek) {
     currentGlobalCounterTime = estimatedExtraHoursEndWeek
   }
+
+  estimatedExtraHoursEndWeek -= overtimeCompensationTime
 
   // New month. So, the maximum of extra time is HIGHEST_MONTHLY_EXTRA_TIME.
   if (monday.getDate() > sunday.getDate()) {
@@ -2999,6 +3011,7 @@ function getChangelog () {
         <li>Plage déjeuner entre <b>11:30</b> et <b>14:30</b>.</li>
         <li>La pause déjeuner est de <b>30 minutes minimum</b>.</li>
       </ul>
+    <li>Prise en compte de la récupération d'horaires variables dans l'estimation des heures supplémentaires.</li>
   </ul>
 `
 }
