@@ -148,7 +148,7 @@ class AdpEnhancedUpdater:
             current_version = "[no previous version] (is GitHub down?)"
 
         print(
-            "The update is set to upgrade to {version} from {current_version}.".format(
+            "Version update is {current_version} -> {version}.".format(
                 version=version,
                 current_version=current_version,
             )
