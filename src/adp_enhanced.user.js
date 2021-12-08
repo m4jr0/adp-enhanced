@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.4.0.0
+// @version      0.4.0.1
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -1347,14 +1347,14 @@ function getNow () {
 }
 
 // Get the estimated extra time at the end of the day.
-function getEstimatedExtraTimeAtTheEndOfTheDay (currentDay) {
-  let morning1 = getStartMorningTime(currentDay)
-  let morning2 = getEndMorningTime(currentDay)
-  let afternoon1 = getStartAfternoonTime(currentDay)
-  let afternoon2 = getEndAfternoonTime(currentDay)
+function getEstimatedExtraTimeAtTheEndOfTheDay (day) {
+  let morning1 = getStartMorningTime(day)
+  let morning2 = getEndMorningTime(day)
+  let afternoon1 = getStartAfternoonTime(day)
+  let afternoon2 = getEndAfternoonTime(day)
 
   if (morning1 === null) {
-    morning1 = MINIMUM_BEGINNING_WORKING_TIME
+    morning1 = RECOMMENDED_BEGINNING_WORKING_TIME
     morning2 = null
     afternoon1 = null
     afternoon2 = null
@@ -1372,20 +1372,24 @@ function getEstimatedExtraTimeAtTheEndOfTheDay (currentDay) {
   }
 
   if (afternoon2 === null) {
-    let estimatedLeavingTime = dailyWorkedTime[currentDay].dailyDelta
-    estimatedLeavingTime -= extraHoursAdded
+    if (day > getNow().getDay() - 1) {
+      afternoon2 = RECOMMENDED_ENDING_WORKING_TIME
+    } else {
+      let estimatedLeavingTime = dailyWorkedTime[day].dailyDelta
+      estimatedLeavingTime -= extraHoursAdded
 
-    afternoon2 = generateLeavingTime(
-      currentDay,
-      currentDay,
-      estimatedLeavingTime
-    )
+      afternoon2 = generateLeavingTime(
+        day,
+        day,
+        estimatedLeavingTime
+      )
 
-    let now = getNow()
-    now = convertToSeconds({ hours: now.getHours(), minutes: now.getMinutes() })
+      let now = getNow()
+      now = convertToSeconds({ hours: now.getHours(), minutes: now.getMinutes() })
 
-    if (afternoon2 < now) {
-      afternoon2 = now
+      if (afternoon2 < now) {
+        afternoon2 = now
+      }
     }
   }
 
@@ -1581,9 +1585,13 @@ function addWorkedHours () {
       currentExtraTime =
         dailyWorkedTime[currentDayForExtraTime - 1].cumulatedDelta
     }
+  }
 
-    currentExtraTime +=
-      getEstimatedExtraTimeAtTheEndOfTheDay(currentDayForExtraTime)
+  if (!isPast) {
+    for (let day = currentDayForExtraTime + 1; day < DAYS_TO_COUNT; day++) {
+      currentExtraTime +=
+        getEstimatedExtraTimeAtTheEndOfTheDay(day)
+    }
   }
 
   let estimatedExtraHoursEndWeek = getBeginningOfTheWeekExtraTime() +
@@ -3003,15 +3011,10 @@ function handleWelcomeAcceptButton () {
 function getChangelog () {
   return `<h3>Changelog :</h3>
   <ul>
-    <li>Prise en compte des congés payés dans le calcul des horaires.</li>
-    <li>Prise en compte des nouveaux horaires variables (Covid) à partir du <b>6 décembre 2021</b>.</li>
-      <ul>
-        <li>Arrivée entre <b>7:30</b> et <b>10:00</b>.</li>
-        <li>Départ entre <b>16:00</b> et <b>20:00</b>.</li>
-        <li>Plage déjeuner entre <b>11:30</b> et <b>14:30</b>.</li>
-        <li>La pause déjeuner est de <b>30 minutes minimum</b>.</li>
-      </ul>
-    <li>Prise en compte de la récupération d'horaires variables dans l'estimation des heures supplémentaires.</li>
+    <li>Amélioration du système d'estimation des horaires lorsque des heures sont manuellement entrées par l'utilisateur.</li>
+    <ul>
+      <li>L'estimation pouvait être incorrecte lorsque des heures des jours suivants étaient renseignées.</li>
+    </ul>
   </ul>
 `
 }
