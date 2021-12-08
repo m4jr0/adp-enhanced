@@ -972,7 +972,7 @@ function validateWorkHours (value, modifiedElement) {
   let isBlank = false
 
   const newHoursValues = []
-  const rawValue = modifiedElement.value
+  const rawValue = modifiedElement.value.trim()
 
   if (rawValue && rawValue.length >= 1) {
     const values = rawValue.split(':')
