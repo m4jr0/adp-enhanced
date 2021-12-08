@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.4.1.0
+// @version      0.4.2.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -20,6 +20,102 @@
 /* global self */
 
 // Constants.
+// Storage.
+const DEBUG_IS_DEBUG_PANEL_VISIBLE_KEY = 'debug-is-debug-panel-visible'
+const DEBUG_IS_DEBUG_MODE_KEY = 'debug-is-debug-mode'
+const DEBUG_NOW_KEY = 'debug-now'
+const DEBUG_WEEK_LABEL_KEY = 'debug-week-label'
+const DEBUG_EXTRA_HOURS_HOURS_KEY = 'debug-extra-hours-hours'
+const DEBUG_EXTRA_HOURS_MINUTES_KEY = 'debug-extra-hours-minutes'
+const DEBUG_EXTRA_HOURS_SIGN_KEY = 'debug-extra-hours-sign'
+const DEBUG_GENERATED_HOURS_KEY = 'debug-generated-hours'
+const DEBUG_ACTUAL_HOURS_KEY = 'debug-actual-hours'
+const MORNING_HOURS_KEY = 'morning-hours-key'
+const MORNING_MINUTES_KEY = 'morning-minutes-key'
+const AFTERNOON_HOURS_KEY = 'afternoon-hours-key'
+const AFTERNOON_MINUTES_KEY = 'afternoon-minutes-key'
+const MINIMUM_BEGINNING_WORKING_HOURS_KEY = 'minimum-beginning-working-hours-key'
+const MINIMUM_BEGINNING_WORKING_MINUTES_KEY = 'minimum-beginning-working-minutes-key'
+const MINIMUM_LEAVING_WORKING_HOURS_KEY = 'minimum-leaving-working-hours-key'
+const MINIMUM_LEAVING_WORKING_MINUTES_KEY = 'minimum-leaving-working-minutes-key'
+const MAXIMUM_LEAVING_WORKING_HOURS_KEY = 'maximum-working-hours-key'
+const MAXIMUM_LEAVING_WORKING_MINUTES_KEY = 'maximum-working-minutes-key'
+const MINIMUM_LUNCH_BREAK_HOURS_KEY = 'minimum-lunch-break-hours-key'
+const MINIMUM_LUNCH_BREAK_MINUTES_KEY = 'minimum-lunch-break-minutes-key'
+const MORNING_BREAK_HOURS_KEY = 'morning-break-hours-key'
+const MORNING_BREAK_MINUTES_KEY = 'morning-break-minutes-key'
+const AFTERNOON_BREAK_HOURS_KEY = 'afternoon-break-hours-key'
+const AFTERNOON_BREAK_MINUTES_KEY = 'afternoon-break-minutes-key'
+const RECOMMENDED_BEGINNING_WORKING_HOURS_KEY = 'recommended-beginning-working-hours-key'
+const RECOMMENDED_BEGINNING_WORKING_MINUTES_KEY = 'recommended-beginning-working-minutes-key'
+const RECOMMENDED_BEGINNING_LUNCH_HOURS_KEY = 'recommended-beginning-lunch-hours-key'
+const RECOMMENDED_BEGINNING_LUNCH_MINUTES_KEY = 'recommended-beginning-lunch-minutes-key'
+const RECOMMENDED_ENDING_LUNCH_HOURS_KEY = 'recommended-ending-lunch-hours-key'
+const RECOMMENDED_ENDING_LUNCH_MINUTES_KEY = 'recommended-ending-lunch-minutes-key'
+const RECOMMENDED_ENDING_WORKING_HOURS_KEY = 'recommended-ending-working-hours-key'
+const RECOMMENDED_ENDING_WORKING_MINUTES_KEY = 'recommended-ending-working-minutes-key'
+const RECOMMENDED_LUNCH_BREAK_HOURS_KEY = 'recommended-lunch-break-hours-key'
+const RECOMMENDED_LUNCH_BREAK_MINUTES_KEY = 'recommended-lunch-break-minutes-key'
+const LOWEST_TOTAL_EXTRA_HOURS_KEY = 'lowest-total-extra-hours-key'
+const LOWEST_TOTAL_EXTRA_MINUTES_KEY = 'lowest-total-extra-minutes-key'
+const HIGHEST_WEEKLY_EXTRA_HOURS_KEY = 'highest-weekly-extra-hours-key'
+const HIGHEST_WEEKLY_EXTRA_MINUTES_KEY = 'highest-weekly-extra-minutes-key'
+const HIGHEST_TOTAL_EXTRA_HOURS_KEY = 'highest-total-extra-hours-key'
+const HIGHEST_TOTAL_EXTRA_MINUTES_KEY = 'highest-total-extra-minutes-key'
+const IS_OVERTIME_COMPENSATION_KEY = 'is-overtime-compensation-key'
+const ARE_DAYS_OFF_KEY = 'are-days-off-key'
+const IS_UNPAID_TIME_OFF_KEY = 'is-unpaid-time-off-key'
+const ARE_NATIONAL_HOLIDAYS_KEY = 'are-national-holiday-key'
+const ARE_SICK_DAYS_KEY = 'are-sick-days-key'
+
+const LOCAL_STORAGE_TYPES = {}
+LOCAL_STORAGE_TYPES[DEBUG_IS_DEBUG_PANEL_VISIBLE_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[DEBUG_IS_DEBUG_MODE_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[DEBUG_NOW_KEY] = 'date'
+LOCAL_STORAGE_TYPES[DEBUG_WEEK_LABEL_KEY] = 'string'
+LOCAL_STORAGE_TYPES[DEBUG_EXTRA_HOURS_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[DEBUG_EXTRA_HOURS_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[DEBUG_EXTRA_HOURS_SIGN_KEY] = 'number'
+LOCAL_STORAGE_TYPES[DEBUG_GENERATED_HOURS_KEY] = 'string'
+LOCAL_STORAGE_TYPES[DEBUG_ACTUAL_HOURS_KEY] = 'string'
+LOCAL_STORAGE_TYPES[MORNING_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MORNING_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[AFTERNOON_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[AFTERNOON_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MINIMUM_BEGINNING_WORKING_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MINIMUM_BEGINNING_WORKING_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MINIMUM_LEAVING_WORKING_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MINIMUM_LEAVING_WORKING_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MAXIMUM_LEAVING_WORKING_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MAXIMUM_LEAVING_WORKING_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MINIMUM_LUNCH_BREAK_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MINIMUM_LUNCH_BREAK_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MORNING_BREAK_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[MORNING_BREAK_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[AFTERNOON_BREAK_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[AFTERNOON_BREAK_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_BEGINNING_WORKING_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_BEGINNING_WORKING_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_BEGINNING_LUNCH_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_BEGINNING_LUNCH_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_ENDING_LUNCH_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_ENDING_LUNCH_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_ENDING_WORKING_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_ENDING_WORKING_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_LUNCH_BREAK_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[RECOMMENDED_LUNCH_BREAK_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[LOWEST_TOTAL_EXTRA_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[LOWEST_TOTAL_EXTRA_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[HIGHEST_WEEKLY_EXTRA_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[HIGHEST_WEEKLY_EXTRA_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[HIGHEST_TOTAL_EXTRA_HOURS_KEY] = 'number'
+LOCAL_STORAGE_TYPES[HIGHEST_TOTAL_EXTRA_MINUTES_KEY] = 'number'
+LOCAL_STORAGE_TYPES[IS_OVERTIME_COMPENSATION_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[ARE_DAYS_OFF_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[IS_UNPAID_TIME_OFF_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[ARE_NATIONAL_HOLIDAYS_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[ARE_SICK_DAYS_KEY] = 'boolean'
+
 // Version.
 const LAST_VERSION_KEY = 'last-version'
 const VERSION_LABEL_DEV = 'master'
@@ -65,8 +161,11 @@ const END_NOTIFICATION_CHECKBOX_DEFAULT_VALUE = false
 const COUNTER_SIZE_CSS = '1.4em'
 const ORIGINAL_COLOR_HOURS_CSS = 'black'
 const MODIFIED_COLOR_HOURS_CSS = 'blue'
-const DAYS_OFF_TAGS = ['RV', 'CS', 'CP']
-const NATIONAL_HOLIDAY_TAGS = ['JF']
+const OVERTIME_COMPENSATION_TAG = 'RV'
+const DAYS_OFF_TAG = 'CP'
+const UNPAID_TIME_OFF_TAG = 'CS'
+const NATIONAL_HOLIDAY_TAG = 'JF'
+const SICK_DAYS_TAG = 'MA'
 const HOUR_ELEMENT_EMPTY_DEFAULT_VALUE = '&nbsp;'
 const HOUR_ELEMENT_EMPTY_VALUES = [
   HOUR_ELEMENT_EMPTY_DEFAULT_VALUE,
@@ -91,6 +190,7 @@ let currentMondayObj = getMondayTimeObjOfCurrentAdpWeek()
 let hoursInputBaseValue = null
 let extraHoursAdded = 0
 let overtimeCompensationTime = 0
+let isAdvancedSettingsPanelVisible = false
 
 let globalCounterHours = 0
 let globalCounterMinutes = 0
@@ -106,15 +206,6 @@ const WEEK_PAST = 'past'
 const WEEK_FUTURE = 'future'
 
 // Debug mode.
-const DEBUG_IS_DEBUG_PANEL_VISIBLE_KEY = 'debug-is-debug-panel-visible'
-const DEBUG_IS_DEBUG_MODE_KEY = 'debug-is-debug-mode'
-const DEBUG_NOW_KEY = 'debug-now'
-const DEBUG_WEEK_LABEL_KEY = 'debug-week-label'
-const DEBUG_EXTRA_HOURS_HOURS_KEY = 'debug-extra-hours-hours'
-const DEBUG_EXTRA_HOURS_MINUTES_KEY = 'debug-extra-hours-minutes'
-const DEBUG_EXTRA_HOURS_SIGN_KEY = 'debug-extra-hours-sign'
-const DEBUG_GENERATED_HOURS_KEY = 'debug-generated-hours'
-const DEBUG_ACTUAL_HOURS_KEY = 'debug-actual-hours'
 const DEBUG_DEBUG_PANEL_SHORTCUT = ['d', 'm']
 const DEBUG_DEBUG_PANEL_SHORTCUT_TIMEOUT = 1000
 
@@ -146,16 +237,36 @@ const DEBUG_RESTORE_HOURS_BUTTON_ID = 'debug-restore-hours-button'
 const DEBUG_DELETE_HOURS_BUTTON_ID = 'debug-delete-hours-button'
 const DEBUG_RESTORE_ACTUAL_HOURS_BUTTON_ID = 'debug-restore-actual-hours-button'
 
-const LOCAL_STORAGE_TYPES = {}
-LOCAL_STORAGE_TYPES[DEBUG_IS_DEBUG_PANEL_VISIBLE_KEY] = 'boolean'
-LOCAL_STORAGE_TYPES[DEBUG_IS_DEBUG_MODE_KEY] = 'boolean'
-LOCAL_STORAGE_TYPES[DEBUG_NOW_KEY] = 'date'
-LOCAL_STORAGE_TYPES[DEBUG_WEEK_LABEL_KEY] = 'string'
-LOCAL_STORAGE_TYPES[DEBUG_EXTRA_HOURS_HOURS_KEY] = 'number'
-LOCAL_STORAGE_TYPES[DEBUG_EXTRA_HOURS_MINUTES_KEY] = 'number'
-LOCAL_STORAGE_TYPES[DEBUG_EXTRA_HOURS_SIGN_KEY] = 'number'
-LOCAL_STORAGE_TYPES[DEBUG_GENERATED_HOURS_KEY] = 'string'
-LOCAL_STORAGE_TYPES[DEBUG_ACTUAL_HOURS_KEY] = 'string'
+// Advanced settings.
+const ADVANCED_SETTINGS_CONTAINER_ID = 'advanced-settings-container'
+const ADVANCED_SETTINGS_MODAL_ID = 'advanced-settings-modal'
+const SAVE_ADVANCED_SETTINGS_BUTTON = 'save-advanced-settings-button'
+const RESTORE_DEFAULT_ADVANCED_SETTINGS_BUTTON = 'restore-default-advanced-settings-button'
+const DEFAULT_IS_OVERTIME_COMPENSATION = true
+const DEFAULT_ARE_DAYS_OFF = true
+const DEFAULT_IS_UNPAID_TIME_OFF = true
+const DEFAULT_ARE_NATIONAL_HOLIDAYS = true
+const DEFAULT_ARE_SICK_DAYS = true
+
+const isOvertimeCompensation = () => {
+  return getSettingsValue(IS_OVERTIME_COMPENSATION_KEY, DEFAULT_IS_OVERTIME_COMPENSATION)
+}
+
+const areDaysOff = () => {
+  return getSettingsValue(ARE_DAYS_OFF_KEY, DEFAULT_ARE_DAYS_OFF)
+}
+
+const isUnpaidTimeOff = () => {
+  return getSettingsValue(IS_UNPAID_TIME_OFF_KEY, DEFAULT_IS_UNPAID_TIME_OFF)
+}
+
+const areNationalHolidays = () => {
+  return getSettingsValue(ARE_NATIONAL_HOLIDAYS_KEY, DEFAULT_ARE_NATIONAL_HOLIDAYS)
+}
+
+const areSickDays = () => {
+  return getSettingsValue(ARE_SICK_DAYS_KEY, DEFAULT_ARE_SICK_DAYS)
+}
 
 // Misc.
 const now = getNow()
@@ -197,6 +308,75 @@ const REFRESH_PAGE_TIME_ID = 'refresh-page-time'
 const GLOBAL_COUNTER_CHECKBOX_ID = 'global-counter-checkbox'
 const END_NOTIFICATION_CHECKBOX_ID = 'end-notification-checkbox'
 const HOURS_INPUT_CLASS_NAME = 'hours-input-element'
+const IS_OVERTIME_COMPENSATION_CHECKBOX_ID = 'is-overtime-compensation-checkbox'
+const ARE_DAYS_OFF_CHECKBOX_ID = 'are-days-off-checkbox'
+const IS_UNPAID_TIME_OFF_CHECKBOX_ID = 'is-unpaid-time-off-checkbox'
+const ARE_NATIONAL_HOLIDAY_CHECKBOX_ID = 'are-national-holiday-checkbox'
+const ARE_SICK_DAYS_CHECKBOX_ID = 'are-sick-days-checkbox'
+const MORNING_HOURS_INPUT_NAME = 'morning-hours-input'
+const MORNING_HOURS_INPUT_ID = MORNING_HOURS_INPUT_NAME
+const MORNING_MINUTES_INPUT_NAME = 'morning-minutes-input'
+const MORNING_MINUTES_INPUT_ID = MORNING_MINUTES_INPUT_NAME
+const AFTERNOON_HOURS_INPUT_NAME = 'afternoon-hours-input'
+const AFTERNOON_HOURS_INPUT_ID = AFTERNOON_HOURS_INPUT_NAME
+const AFTERNOON_MINUTES_INPUT_NAME = 'afternoon-minutes-input'
+const AFTERNOON_MINUTES_INPUT_ID = AFTERNOON_MINUTES_INPUT_NAME
+const MINIMUM_BEGINNING_WORKING_HOURS_INPUT_NAME = 'minimum-beginning-working-hours-input'
+const MINIMUM_BEGINNING_WORKING_HOURS_INPUT_ID = MINIMUM_BEGINNING_WORKING_HOURS_INPUT_NAME
+const MINIMUM_BEGINNING_WORKING_MINUTES_INPUT_NAME = 'minimum-beginning-working-minutes-input'
+const MINIMUM_BEGINNING_WORKING_MINUTES_INPUT_ID = MINIMUM_BEGINNING_WORKING_MINUTES_INPUT_NAME
+const MINIMUM_LEAVING_WORKING_HOURS_INPUT_NAME = 'minimum-leaving-working-hours-input'
+const MINIMUM_LEAVING_WORKING_HOURS_INPUT_ID = MINIMUM_LEAVING_WORKING_HOURS_INPUT_NAME
+const MINIMUM_LEAVING_WORKING_MINUTES_INPUT_NAME = 'minimum-leaving-working-minutes-input'
+const MINIMUM_LEAVING_WORKING_MINUTES_INPUT_ID = MINIMUM_LEAVING_WORKING_MINUTES_INPUT_NAME
+const MAXIMUM_LEAVING_WORKING_HOURS_INPUT_NAME = 'maximum-working-hours-input'
+const MAXIMUM_LEAVING_WORKING_HOURS_INPUT_ID = MAXIMUM_LEAVING_WORKING_HOURS_INPUT_NAME
+const MAXIMUM_LEAVING_WORKING_MINUTES_INPUT_NAME = 'maximum-working-minutes-input'
+const MAXIMUM_LEAVING_WORKING_MINUTES_INPUT_ID = MAXIMUM_LEAVING_WORKING_MINUTES_INPUT_NAME
+const MINIMUM_LUNCH_BREAK_HOURS_INPUT_NAME = 'minimum-lunch-break-hours-input'
+const MINIMUM_LUNCH_BREAK_HOURS_INPUT_ID = MINIMUM_LUNCH_BREAK_HOURS_INPUT_NAME
+const MINIMUM_LUNCH_BREAK_MINUTES_INPUT_NAME = 'minimum-lunch-break-minutes-input'
+const MINIMUM_LUNCH_BREAK_MINUTES_INPUT_ID = MINIMUM_LUNCH_BREAK_MINUTES_INPUT_NAME
+const MORNING_BREAK_HOURS_INPUT_NAME = 'morning-break-hours-input'
+const MORNING_BREAK_HOURS_INPUT_ID = MORNING_BREAK_HOURS_INPUT_NAME
+const MORNING_BREAK_MINUTES_INPUT_NAME = 'morning-break-minutes-input'
+const MORNING_BREAK_MINUTES_INPUT_ID = MORNING_BREAK_MINUTES_INPUT_NAME
+const AFTERNOON_BREAK_HOURS_INPUT_NAME = 'afternoon-break-hours-input'
+const AFTERNOON_BREAK_HOURS_INPUT_ID = AFTERNOON_BREAK_HOURS_INPUT_NAME
+const AFTERNOON_BREAK_MINUTES_INPUT_NAME = 'afternoon-break-minutes-input'
+const AFTERNOON_BREAK_MINUTES_INPUT_ID = AFTERNOON_BREAK_MINUTES_INPUT_NAME
+const RECOMMENDED_BEGINNING_WORKING_HOURS_INPUT_NAME = 'recommended-beginning-working-hours-input'
+const RECOMMENDED_BEGINNING_WORKING_HOURS_INPUT_ID = RECOMMENDED_BEGINNING_WORKING_HOURS_INPUT_NAME
+const RECOMMENDED_BEGINNING_WORKING_MINUTES_INPUT_NAME = 'recommended-beginning-working-minutes-input'
+const RECOMMENDED_BEGINNING_WORKING_MINUTES_INPUT_ID = RECOMMENDED_BEGINNING_WORKING_MINUTES_INPUT_NAME
+const RECOMMENDED_BEGINNING_LUNCH_HOURS_INPUT_NAME = 'recommended-beginning-lunch-hours-input'
+const RECOMMENDED_BEGINNING_LUNCH_HOURS_INPUT_ID = RECOMMENDED_BEGINNING_LUNCH_HOURS_INPUT_NAME
+const RECOMMENDED_BEGINNING_LUNCH_MINUTES_INPUT_NAME = 'recommended-beginning-lunch-minutes-input'
+const RECOMMENDED_BEGINNING_LUNCH_MINUTES_INPUT_ID = RECOMMENDED_BEGINNING_LUNCH_MINUTES_INPUT_NAME
+const RECOMMENDED_ENDING_LUNCH_HOURS_INPUT_NAME = 'recommended-ending-lunch-hours-input'
+const RECOMMENDED_ENDING_LUNCH_HOURS_INPUT_ID = RECOMMENDED_ENDING_LUNCH_HOURS_INPUT_NAME
+const RECOMMENDED_ENDING_LUNCH_MINUTES_INPUT_NAME = 'recommended-ending-lunch-minutes-input'
+const RECOMMENDED_ENDING_LUNCH_MINUTES_INPUT_ID = RECOMMENDED_ENDING_LUNCH_MINUTES_INPUT_NAME
+const RECOMMENDED_ENDING_WORKING_HOURS_INPUT_NAME = 'recommended-ending-working-hours-input'
+const RECOMMENDED_ENDING_WORKING_HOURS_INPUT_ID = RECOMMENDED_ENDING_WORKING_HOURS_INPUT_NAME
+const RECOMMENDED_ENDING_WORKING_MINUTES_INPUT_NAME = 'recommended-ending-working-minutes-input'
+const RECOMMENDED_ENDING_WORKING_MINUTES_INPUT_ID = RECOMMENDED_ENDING_WORKING_MINUTES_INPUT_NAME
+const RECOMMENDED_LUNCH_BREAK_HOURS_INPUT_NAME = 'recommended-lunch-break-hours-input'
+const RECOMMENDED_LUNCH_BREAK_HOURS_INPUT_ID = RECOMMENDED_LUNCH_BREAK_HOURS_INPUT_NAME
+const RECOMMENDED_LUNCH_BREAK_MINUTES_INPUT_NAME = 'recommended-lunch-break-minutes-input'
+const RECOMMENDED_LUNCH_BREAK_MINUTES_INPUT_ID = RECOMMENDED_LUNCH_BREAK_MINUTES_INPUT_NAME
+const LOWEST_TOTAL_EXTRA_HOURS_INPUT_NAME = 'lowest-total-extra-hours-input'
+const LOWEST_TOTAL_EXTRA_HOURS_INPUT_ID = LOWEST_TOTAL_EXTRA_HOURS_INPUT_NAME
+const LOWEST_TOTAL_EXTRA_MINUTES_INPUT_NAME = 'lowest-total-extra-minutes-input'
+const LOWEST_TOTAL_EXTRA_MINUTES_INPUT_ID = LOWEST_TOTAL_EXTRA_MINUTES_INPUT_NAME
+const HIGHEST_WEEKLY_EXTRA_HOURS_INPUT_NAME = 'highest-weekly-extra-hours-input'
+const HIGHEST_WEEKLY_EXTRA_HOURS_INPUT_ID = HIGHEST_WEEKLY_EXTRA_HOURS_INPUT_NAME
+const HIGHEST_WEEKLY_EXTRA_MINUTES_INPUT_NAME = 'highest-weekly-extra-minutes-input'
+const HIGHEST_WEEKLY_EXTRA_MINUTES_INPUT_ID = HIGHEST_WEEKLY_EXTRA_MINUTES_INPUT_NAME
+const HIGHEST_TOTAL_EXTRA_HOURS_INPUT_NAME = 'highest-total-extra-hours-input'
+const HIGHEST_TOTAL_EXTRA_HOURS_INPUT_ID = HIGHEST_TOTAL_EXTRA_HOURS_INPUT_NAME
+const HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_NAME = 'highest-total-extra-minutes-input'
+const HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_ID = HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_NAME
 
 // Messages.
 const ERROR_GLOBAL_COUNTER = 'Impossible de récupérer les heures ' +
@@ -207,148 +387,285 @@ const REFRESH_PAGE_CHECKBOX_NAME = REFRESH_PAGE_CHECKBOX_ID
 const REFRESH_PAGE_TIME_NAME = REFRESH_PAGE_TIME_ID
 const GLOBAL_COUNTER_CHECKBOX_NAME = GLOBAL_COUNTER_CHECKBOX_ID
 const END_NOTIFICATION_CHECKBOX_NAME = END_NOTIFICATION_CHECKBOX_ID
+const OVERTIME_COMPENSATION_CHECKBOX_NAME = IS_OVERTIME_COMPENSATION_CHECKBOX_ID
+const DAYS_OFF_CHECKBOX_NAME = ARE_DAYS_OFF_CHECKBOX_ID
+const UNPAID_TIME_OFF_CHECKBOX_NAME = IS_UNPAID_TIME_OFF_CHECKBOX_ID
+const NATIONAL_HOLIDAY_CHECKBOX_NAME = ARE_NATIONAL_HOLIDAY_CHECKBOX_ID
+const SICK_DAYS_CHECKBOX_NAME = ARE_SICK_DAYS_CHECKBOX_ID
 
 // CSS.
 const NEGATIVE_DELTA_COLOR = 'red'
 const POSITIVE_DELTA_COLOR = 'green'
 
-// Time constants.
+// Time constants and variables.
 const DAYS_TO_COUNT = 5
 
-const MORNING_HOURS = 3
-const MORNING_MINUTES = 30
-const MORNING_TIME = convertToSeconds(
-  { hours: MORNING_HOURS, minutes: MORNING_MINUTES }
-)
+const DEFAULT_MORNING_HOURS = 3
+const DEFAULT_MORNING_MINUTES = 30
+const getMorningTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(MORNING_HOURS_KEY, DEFAULT_MORNING_HOURS),
+      minutes: getSettingsValue(MORNING_MINUTES_KEY, DEFAULT_MORNING_MINUTES)
+    }
+  )
+}
 
-const AFTERNOON_HOURS = 3
-const AFTERNOON_MINUTES = 30
-const AFTERNOON_TIME = convertToSeconds(
-  { hours: AFTERNOON_HOURS, minutes: AFTERNOON_MINUTES }
-)
+const DEFAULT_AFTERNOON_HOURS = 3
+const DEFAULT_AFTERNOON_MINUTES = 30
+const getAfternoonTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(AFTERNOON_HOURS_KEY, DEFAULT_AFTERNOON_HOURS),
+      minutes: getSettingsValue(AFTERNOON_MINUTES_KEY, DEFAULT_AFTERNOON_MINUTES)
+    }
+  )
+}
 
-const MINIMUM_BEGINNING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 7 : 8
-const MINIMUM_BEGINNING_WORKING_MINUTES = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 30 : 0
-const MINIMUM_BEGINNING_WORKING_TIME = convertToSeconds(
-  {
-    hours: MINIMUM_BEGINNING_WORKING_HOURS,
-    minutes: MINIMUM_BEGINNING_WORKING_MINUTES
-  }
-)
+const DEFAULT_MINIMUM_BEGINNING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 7 : 8
+const DEFAULT_MINIMUM_BEGINNING_WORKING_MINUTES = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 30 : 0
+const getMinimumBeginningWorkingTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(MINIMUM_BEGINNING_WORKING_HOURS_KEY, DEFAULT_MINIMUM_BEGINNING_WORKING_HOURS),
+      minutes: getSettingsValue(MINIMUM_BEGINNING_WORKING_MINUTES_KEY, DEFAULT_MINIMUM_BEGINNING_WORKING_MINUTES)
+    }
+  )
+}
 
-const MINIMUM_LEAVING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 16 : 17
-const MINIMUM_LEAVING_WORKING_MINUTES = 0
-const MINIMUM_LEAVING_WORKING_TIME = convertToSeconds(
-  {
-    hours: MINIMUM_LEAVING_WORKING_HOURS,
-    minutes: MINIMUM_LEAVING_WORKING_MINUTES
-  }
-)
+const DEFAULT_MINIMUM_LEAVING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 16 : 17
+const DEFAULT_MINIMUM_LEAVING_WORKING_MINUTES = 0
+const getMinimumLeavingWorkingTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(MINIMUM_LEAVING_WORKING_HOURS_KEY, DEFAULT_MINIMUM_LEAVING_WORKING_HOURS),
+      minutes: getSettingsValue(MINIMUM_LEAVING_WORKING_MINUTES_KEY, DEFAULT_MINIMUM_LEAVING_WORKING_MINUTES)
+    }
+  )
+}
 
-const MAXIMUM_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 20 : 19
-const MAXIMUM_WORKING_MINUTES = 0
-const MAXIMUM_WORKING_TIME = convertToSeconds(
-  { hours: MAXIMUM_WORKING_HOURS, minutes: MAXIMUM_WORKING_MINUTES }
-)
+const DEFAULT_MAXIMUM_LEAVING_WORKING_HOURS = ARE_COVID_HOURS_1 || ARE_COVID_HOURS_2 ? 20 : 19
+const DEFAULT_MAXIMUM_LEAVING_WORKING_MINUTES = 0
+const getMaximumLeavingWorkingTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(MAXIMUM_LEAVING_WORKING_HOURS_KEY, DEFAULT_MAXIMUM_LEAVING_WORKING_HOURS),
+      minutes: getSettingsValue(MAXIMUM_LEAVING_WORKING_MINUTES_KEY, DEFAULT_MAXIMUM_LEAVING_WORKING_MINUTES)
+    }
+  )
+}
 
-const MINIMUM_LUNCH_BREAK_HOURS = ARE_COVID_HOURS_2 ? 0 : 1
-const MINIMUM_LUNCH_BREAK_MINUTES = ARE_COVID_HOURS_2 ? 30 : 0
-const MINIMUM_LUNCH_BREAH_TIME = convertToSeconds(
-  { hours: MINIMUM_LUNCH_BREAK_HOURS, minutes: MINIMUM_LUNCH_BREAK_MINUTES }
-)
+const DEFAULT_MINIMUM_LUNCH_BREAK_HOURS = ARE_COVID_HOURS_2 ? 0 : 1
+const DEFAULT_MINIMUM_LUNCH_BREAK_MINUTES = ARE_COVID_HOURS_2 ? 30 : 0
+const getMinimumLunchBreakTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(MINIMUM_LUNCH_BREAK_HOURS_KEY, DEFAULT_MINIMUM_LUNCH_BREAK_HOURS),
+      minutes: getSettingsValue(MINIMUM_LUNCH_BREAK_MINUTES_KEY, DEFAULT_MINIMUM_LUNCH_BREAK_MINUTES)
+    }
+  )
+}
 
-const MORNING_BREAK_HOURS = 0
-const MORNING_BREAK_MINUTES = 15
-const MORNING_BREAK_TIME = convertToSeconds(
-  { hours: MORNING_BREAK_HOURS, minutes: MORNING_BREAK_MINUTES }
-)
+const DEFAULT_MORNING_BREAK_HOURS = 0
+const DEFAULT_MORNING_BREAK_MINUTES = 15
+const getMorningBreakTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(MORNING_BREAK_HOURS_KEY, DEFAULT_MORNING_BREAK_HOURS),
+      minutes: getSettingsValue(MORNING_BREAK_MINUTES_KEY, DEFAULT_MORNING_BREAK_MINUTES)
+    }
+  )
+}
 
-const AFTERNOON_BREAK_HOURS = 0
-const AFTERNOON_BREAK_MINUTES = 15
-const AFTERNOON_BREAK_TIME = convertToSeconds(
-  { hours: AFTERNOON_BREAK_HOURS, minutes: AFTERNOON_BREAK_MINUTES }
-)
+const DEFAULT_AFTERNOON_BREAK_HOURS = 0
+const DEFAULT_AFTERNOON_BREAK_MINUTES = 15
+const getAfternoonBreakTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(AFTERNOON_BREAK_HOURS_KEY, DEFAULT_AFTERNOON_BREAK_HOURS),
+      minutes: getSettingsValue(AFTERNOON_BREAK_MINUTES_KEY, DEFAULT_AFTERNOON_BREAK_MINUTES)
+    }
+  )
+}
 
-const DAILY_REQUIRED_HOURS = 7
-const DAILY_REQUIRED_MINUTES = 0
-const DAILY_REQUIRED_TIME = convertToSeconds(
-  { hours: DAILY_REQUIRED_HOURS, minutes: DAILY_REQUIRED_MINUTES }
-)
+const getDailyRequiredHours = () => {
+  return getSettingsValue(MORNING_HOURS_KEY, DEFAULT_MORNING_HOURS) + getSettingsValue(AFTERNOON_HOURS_KEY, DEFAULT_AFTERNOON_HOURS)
+}
 
-const WEEKLY_REQUIRED_HOURS = 35
-const WEEKLY_REQUIRED_MINUTES = 0
-const WEEKLY_REQUIRED_TIME = convertToSeconds(
-  { hours: WEEKLY_REQUIRED_HOURS, minutes: WEEKLY_REQUIRED_MINUTES }
-)
+const getDailyRequiredMinutes = () => {
+  return getSettingsValue(MORNING_MINUTES_KEY, DEFAULT_MORNING_MINUTES) + getSettingsValue(AFTERNOON_MINUTES_KEY, DEFAULT_AFTERNOON_MINUTES)
+}
 
-const RECOMMENDED_BEGINNING_WORKING_HOURS = 9
-const RECOMMENDED_BEGINNING_WORKING_MINUTES = 0
-const RECOMMENDED_BEGINNING_WORKING_TIME = convertToSeconds(
-  {
-    hours: RECOMMENDED_BEGINNING_WORKING_HOURS,
-    minutes: RECOMMENDED_BEGINNING_WORKING_MINUTES
-  }
-)
+const getDailyRequiredTime = () => {
+  return convertToSeconds(
+    {
+      hours: getDailyRequiredHours(),
+      minutes: getDailyRequiredMinutes()
+    }
+  )
+}
 
-const RECOMMENDED_BEGINNING_LUNCH_HOURS = 12
-const RECOMMENDED_BEGINNING_LUNCH_MINUTES = 30
-const RECOMMENDED_BEGINNING_LUNCH_TIME = convertToSeconds(
-  {
-    hours: RECOMMENDED_BEGINNING_LUNCH_HOURS,
-    minutes: RECOMMENDED_BEGINNING_LUNCH_MINUTES
-  }
-)
+const getWeeklyRequiredHours = () => {
+  return getDailyRequiredHours() * DAYS_TO_COUNT
+}
 
-const RECOMMENDED_ENDING_LUNCH_HOURS = 14
-const RECOMMENDED_ENDING_LUNCH_MINUTES = 0
-const RECOMMENDED_ENDING_LUNCH_TIME = convertToSeconds(
-  {
-    hours: RECOMMENDED_ENDING_LUNCH_HOURS,
-    minutes: RECOMMENDED_ENDING_LUNCH_MINUTES
-  }
-)
+const getWeeklyRequiredMinutes = () => {
+  return getDailyRequiredMinutes() * DAYS_TO_COUNT
+}
 
-const RECOMMENDED_ENDING_WORKING_HOURS = 18
-const RECOMMENDED_ENDING_WORKING_MINUTES = 0
-const RECOMMENDED_ENDING_WORKING_TIME = convertToSeconds(
-  {
-    hours: RECOMMENDED_ENDING_WORKING_HOURS,
-    minutes: RECOMMENDED_ENDING_WORKING_MINUTES
-  }
-)
+const getWeeklyRequiredTime = () => {
+  return convertToSeconds(
+    {
+      hours: getWeeklyRequiredHours(),
+      minutes: getWeeklyRequiredMinutes()
+    }
+  )
+}
 
-const RECOMMENDED_LUNCH_BREAK_HOURS = 1
-const RECOMMENDED_LUNCH_BREAK_MINUTES = 30
-const RECOMMENDED_LUNCH_BREAK_TIME = convertToSeconds(
-  {
-    hours: RECOMMENDED_LUNCH_BREAK_HOURS,
-    minutes: RECOMMENDED_LUNCH_BREAK_MINUTES
-  }
-)
+const DEFAULT_RECOMMENDED_BEGINNING_WORKING_HOURS = 9
+const DEFAULT_RECOMMENDED_BEGINNING_WORKING_MINUTES = 0
+const getRecommendedBeginningWorkingTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(RECOMMENDED_BEGINNING_WORKING_HOURS_KEY, DEFAULT_RECOMMENDED_BEGINNING_WORKING_HOURS),
+      minutes: getSettingsValue(RECOMMENDED_BEGINNING_WORKING_MINUTES_KEY, DEFAULT_RECOMMENDED_BEGINNING_WORKING_MINUTES)
+    }
+  )
+}
 
-const WEEK_HOURS = DAYS_TO_COUNT * DAILY_REQUIRED_HOURS
-const WEEK_MINUTES = DAYS_TO_COUNT * DAILY_REQUIRED_MINUTES
-const WEEK_TIME = convertToSeconds(
-  { hours: WEEK_HOURS, minutes: WEEK_MINUTES }
-)
+const DEFAULT_RECOMMENDED_BEGINNING_LUNCH_HOURS = 12
+const DEFAULT_RECOMMENDED_BEGINNING_LUNCH_MINUTES = 30
+const getRecommendedBeginningLunchTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(RECOMMENDED_BEGINNING_LUNCH_HOURS_KEY, DEFAULT_RECOMMENDED_BEGINNING_LUNCH_HOURS),
+      minutes: getSettingsValue(RECOMMENDED_BEGINNING_LUNCH_MINUTES_KEY, DEFAULT_RECOMMENDED_BEGINNING_LUNCH_MINUTES)
+    }
+  )
+}
 
-const LOWEST_TOTAL_EXTRA_HOURS = -3
-const LOWEST_TOTAL_EXTRA_MINUTES = 0
-const LOWEST_TOTAL_EXTRA_TIME = convertToSeconds(
-  { hours: LOWEST_TOTAL_EXTRA_HOURS, minutes: LOWEST_TOTAL_EXTRA_MINUTES }
-)
+const DEFAULT_RECOMMENDED_ENDING_LUNCH_HOURS = 14
+const DEFAULT_RECOMMENDED_ENDING_LUNCH_MINUTES = 0
+const getRecommendedEndingLunchTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(RECOMMENDED_ENDING_LUNCH_HOURS_KEY, DEFAULT_RECOMMENDED_ENDING_LUNCH_HOURS),
+      minutes: getSettingsValue(RECOMMENDED_ENDING_LUNCH_MINUTES_KEY, DEFAULT_RECOMMENDED_ENDING_LUNCH_MINUTES)
+    }
+  )
+}
 
-const HIGHEST_WEEKLY_EXTRA_HOURS = 3
-const HIGHEST_WEEKLY_EXTRA_MINUTES = 0
-const HIGHEST_WEEKLY_EXTRA_TIME = convertToSeconds(
-  { hours: HIGHEST_WEEKLY_EXTRA_HOURS, minutes: HIGHEST_WEEKLY_EXTRA_MINUTES }
-)
+const DEFAULT_RECOMMENDED_ENDING_WORKING_HOURS = 18
+const DEFAULT_RECOMMENDED_ENDING_WORKING_MINUTES = 0
+const getRecommendedEndingWorkingTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(RECOMMENDED_ENDING_WORKING_HOURS_KEY, DEFAULT_RECOMMENDED_ENDING_WORKING_HOURS),
+      minutes: getSettingsValue(RECOMMENDED_ENDING_WORKING_MINUTES_KEY, DEFAULT_RECOMMENDED_ENDING_WORKING_MINUTES)
+    }
+  )
+}
 
-const HIGHEST_TOTAL_EXTRA_HOURS = 10
-const HIGHEST_TOTAL_EXTRA_MINUTES = 0
-const HIGHEST_MONTHLY_EXTRA_TIME = convertToSeconds(
-  { hours: HIGHEST_TOTAL_EXTRA_HOURS, minutes: HIGHEST_TOTAL_EXTRA_MINUTES }
-)
+const DEFAULT_RECOMMENDED_LUNCH_BREAK_HOURS = 1
+const DEFAULT_RECOMMENDED_LUNCH_BREAK_MINUTES = 30
+const getRecommendedLunchBreakTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(RECOMMENDED_LUNCH_BREAK_HOURS_KEY, DEFAULT_RECOMMENDED_LUNCH_BREAK_HOURS),
+      minutes: getSettingsValue(RECOMMENDED_LUNCH_BREAK_MINUTES_KEY, DEFAULT_RECOMMENDED_LUNCH_BREAK_MINUTES)
+    }
+  )
+}
+
+const getWeekHours = () => {
+  return DAYS_TO_COUNT * getDailyRequiredHours()
+}
+
+const getWeekMinutes = () => {
+  return DAYS_TO_COUNT * getDailyRequiredMinutes()
+}
+
+const getWeekTime = () => {
+  return convertToSeconds(
+    {
+      hours: getWeekHours(),
+      minutes: getWeekMinutes()
+    }
+  )
+}
+
+const DEFAULT_LOWEST_TOTAL_EXTRA_HOURS = -3
+const DEFAULT_LOWEST_TOTAL_EXTRA_MINUTES = 0
+const getLowestExtraTotalTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(LOWEST_TOTAL_EXTRA_HOURS_KEY, DEFAULT_LOWEST_TOTAL_EXTRA_HOURS),
+      minutes: getSettingsValue(LOWEST_TOTAL_EXTRA_MINUTES_KEY, DEFAULT_LOWEST_TOTAL_EXTRA_MINUTES)
+    }
+  )
+}
+
+const DEFAULT_HIGHEST_WEEKLY_EXTRA_HOURS = 3
+const DEFAULT_HIGHEST_WEEKLY_EXTRA_MINUTES = 0
+const getHighestWeeklyExtraTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(HIGHEST_WEEKLY_EXTRA_HOURS_KEY, DEFAULT_HIGHEST_WEEKLY_EXTRA_HOURS),
+      minutes: getSettingsValue(HIGHEST_WEEKLY_EXTRA_MINUTES_KEY, DEFAULT_HIGHEST_WEEKLY_EXTRA_MINUTES)
+    }
+  )
+}
+
+const DEFAULT_HIGHEST_TOTAL_EXTRA_HOURS = 10
+const DEFAULT_HIGHEST_TOTAL_EXTRA_MINUTES = 0
+const getHighestMonthlyExtraTime = () => {
+  return convertToSeconds(
+    {
+      hours: getSettingsValue(HIGHEST_TOTAL_EXTRA_HOURS_KEY, DEFAULT_HIGHEST_TOTAL_EXTRA_HOURS),
+      minutes: getSettingsValue(HIGHEST_TOTAL_EXTRA_MINUTES_KEY, DEFAULT_HIGHEST_TOTAL_EXTRA_MINUTES)
+    }
+  )
+}
+
+const ADVANCED_SETTINGS_KEYS = [
+  MORNING_HOURS_KEY,
+  MORNING_MINUTES_KEY,
+  AFTERNOON_HOURS_KEY,
+  AFTERNOON_MINUTES_KEY,
+  MINIMUM_BEGINNING_WORKING_HOURS_KEY,
+  MINIMUM_BEGINNING_WORKING_MINUTES_KEY,
+  MINIMUM_LEAVING_WORKING_HOURS_KEY,
+  MINIMUM_LEAVING_WORKING_MINUTES_KEY,
+  MAXIMUM_LEAVING_WORKING_HOURS_KEY,
+  MAXIMUM_LEAVING_WORKING_MINUTES_KEY,
+  MINIMUM_LUNCH_BREAK_HOURS_KEY,
+  MINIMUM_LUNCH_BREAK_MINUTES_KEY,
+  MORNING_BREAK_HOURS_KEY,
+  MORNING_BREAK_MINUTES_KEY,
+  AFTERNOON_BREAK_HOURS_KEY,
+  AFTERNOON_BREAK_MINUTES_KEY,
+  RECOMMENDED_BEGINNING_WORKING_HOURS_KEY,
+  RECOMMENDED_BEGINNING_WORKING_MINUTES_KEY,
+  RECOMMENDED_BEGINNING_LUNCH_HOURS_KEY,
+  RECOMMENDED_BEGINNING_LUNCH_MINUTES_KEY,
+  RECOMMENDED_ENDING_LUNCH_HOURS_KEY,
+  RECOMMENDED_ENDING_LUNCH_MINUTES_KEY,
+  RECOMMENDED_ENDING_WORKING_HOURS_KEY,
+  RECOMMENDED_ENDING_WORKING_MINUTES_KEY,
+  RECOMMENDED_LUNCH_BREAK_HOURS_KEY,
+  RECOMMENDED_LUNCH_BREAK_MINUTES_KEY,
+  LOWEST_TOTAL_EXTRA_HOURS_KEY,
+  LOWEST_TOTAL_EXTRA_MINUTES_KEY,
+  HIGHEST_WEEKLY_EXTRA_HOURS_KEY,
+  HIGHEST_WEEKLY_EXTRA_MINUTES_KEY,
+  HIGHEST_TOTAL_EXTRA_HOURS_KEY,
+  HIGHEST_TOTAL_EXTRA_MINUTES_KEY,
+  IS_OVERTIME_COMPENSATION_KEY,
+  ARE_DAYS_OFF_KEY,
+  IS_UNPAID_TIME_OFF_KEY,
+  ARE_NATIONAL_HOLIDAYS_KEY,
+  ARE_SICK_DAYS_KEY
+]
 
 // Save the parameter to the local storage.
 function setSettingsValue (key, value) {
@@ -389,6 +706,31 @@ function getSettingsValue (key, defaultValue) {
 // Remove the parameter from the local storage.
 function removeSettingsValue (key) {
   localStorage.removeItem(key)
+}
+
+// Reset the advanced settings to their default values.
+function resetAdvancedSettings () {
+  for (const key of ADVANCED_SETTINGS_KEYS) {
+    removeSettingsValue(key)
+  }
+}
+
+// Save the advanced settings.
+function saveAdvancedSettings () {
+  for (const key of ADVANCED_SETTINGS_KEYS) {
+    let input = document.getElementById(`${key.slice(0, -4)}-input`)
+
+    if (input === null) {
+      input = document.getElementById(`${key.slice(0, -4)}-checkbox`)
+    }
+
+    if (input.type === 'checkbox') {
+      setSettingsValue(key, input.checked)
+      continue
+    }
+
+    setSettingsValue(key, input.value)
+  }
 }
 
 // Get the Monday time object of the current ADP week as an object containing
@@ -500,22 +842,22 @@ function getTimeDeltaObj (day) {
       minutes: lastTimeMorningMinutes
     })
 
-    if (firstTimeMorningTotalSeconds - MINIMUM_BEGINNING_WORKING_TIME < 0) {
-      firstTimeMorningTotalSeconds = MINIMUM_BEGINNING_WORKING_TIME
+    if (firstTimeMorningTotalSeconds - getMinimumBeginningWorkingTime() < 0) {
+      firstTimeMorningTotalSeconds = getMinimumBeginningWorkingTime()
     }
 
     morningDelta =
       lastTimeMorningTotalSeconds -
-      (firstTimeMorningTotalSeconds + MORNING_BREAK_TIME)
+      (firstTimeMorningTotalSeconds + getMorningBreakTime())
   }
 
   let firstTimeAfternoonTotalSeconds
   let lastTimeAfternoonTotalSeconds
 
   if (afternoonFirstTimeList.length > 0 && afternoonLastTimeList.length > 0) {
-    let firstTimeAfternoonHours = parseInt(afternoonFirstTimeList[0])
+    const firstTimeAfternoonHours = parseInt(afternoonFirstTimeList[0])
     let lastTimeAfternoonHours = parseInt(afternoonLastTimeList[0])
-    let firstTimeAfternoonMinutes = parseInt(afternoonFirstTimeList[1])
+    const firstTimeAfternoonMinutes = parseInt(afternoonFirstTimeList[1])
     let lastTimeAfternoonMinutes = parseInt(afternoonLastTimeList[1])
 
     if (!isNaN(firstTimeAfternoonHours) && !isNaN(firstTimeAfternoonHours)) {
@@ -540,24 +882,21 @@ function getTimeDeltaObj (day) {
       const timeAtLunchBreakDelta =
         firstTimeAfternoonTotalSeconds - lastTimeMorningTotalSeconds
 
-      if (timeAtLunchBreakDelta < 0 ||
-          timeAtLunchBreakDelta < MINIMUM_LUNCH_BREAH_TIME) {
-        firstTimeAfternoonHours = lastTimeMorningHours + 1
-        firstTimeAfternoonMinutes = lastTimeMorningMinutes
+      const minimumLunchBreakTime = getMinimumLunchBreakTime()
 
-        firstTimeAfternoonTotalSeconds = convertToSeconds({
-          hours: firstTimeAfternoonHours,
-          minutes: firstTimeAfternoonMinutes
-        })
+      if (timeAtLunchBreakDelta < 0 ||
+          timeAtLunchBreakDelta < minimumLunchBreakTime) {
+        firstTimeAfternoonTotalSeconds = lastTimeMorningTotalSeconds +
+          minimumLunchBreakTime
       }
 
-      if (MAXIMUM_WORKING_TIME - lastTimeAfternoonTotalSeconds < 0) {
-        lastTimeAfternoonTotalSeconds = MAXIMUM_WORKING_TIME
+      if (getMaximumLeavingWorkingTime() - lastTimeAfternoonTotalSeconds < 0) {
+        lastTimeAfternoonTotalSeconds = getMaximumLeavingWorkingTime()
       }
 
       afternoonDelta =
         lastTimeAfternoonTotalSeconds -
-        (firstTimeAfternoonTotalSeconds + AFTERNOON_BREAK_TIME)
+        (firstTimeAfternoonTotalSeconds + getAfternoonBreakTime())
     }
   }
 
@@ -662,7 +1001,7 @@ function getCurrentRequiredWorkTime () {
   let requiredTime = 0
 
   for (let index = mondayDay; index < today; ++index) {
-    requiredTime += MORNING_TIME + AFTERNOON_TIME
+    requiredTime += getMorningTime() + getAfternoonTime()
   }
 
   return requiredTime
@@ -874,6 +1213,39 @@ function getNormalizedDaytimeString (hours, minutes) {
   return `${normalizedHours}:${normalizedMinutes}`
 }
 
+// Tell whether the tag represents a day off or not.
+function isDayOffTag (tag) {
+  if (tag === OVERTIME_COMPENSATION_TAG && isOvertimeCompensation()) {
+    return true
+  }
+
+  if (tag === DAYS_OFF_TAG && areDaysOff()) {
+    return true
+  }
+
+  if (tag === UNPAID_TIME_OFF_TAG && isUnpaidTimeOff()) {
+    return true
+  }
+
+  if (tag === SICK_DAYS_TAG && areSickDays()) {
+    return true
+  }
+
+  return false
+}
+
+// Tell whether the tag represents national holidays or not.
+function isNationalHolidayTag (tag) {
+  if (tag === NATIONAL_HOLIDAY_TAG &&
+    getSettingsValue(
+      ARE_NATIONAL_HOLIDAYS_KEY,
+      DEFAULT_ARE_NATIONAL_HOLIDAYS)) {
+    return true
+  }
+
+  return false
+}
+
 // Get a delta time object of worked hours.
 function getWorkedHoursDeltaTimeObj (
   morning1,
@@ -889,24 +1261,24 @@ function getWorkedHoursDeltaTimeObj (
     afternoon2 = now.getDate()
   }
 
-  morning1 = Math.max(morning1, MINIMUM_BEGINNING_WORKING_TIME)
+  morning1 = Math.max(morning1, getMinimumBeginningWorkingTime())
 
   if (afternoon2 !== null) {
-    afternoon2 = Math.min(afternoon2, MAXIMUM_WORKING_TIME)
+    afternoon2 = Math.min(afternoon2, getMaximumLeavingWorkingTime())
   }
 
   if (morning2 < morning1) morning2 = morning1
 
-  const morningDelta = morning2 - morning1 - MORNING_BREAK_TIME
+  const morningDelta = morning2 - morning1 - getMorningBreakTime()
   let afternoonDelta = 0
 
   if (afternoon1 !== null) {
-    if (afternoon1 - morning2 < MINIMUM_LUNCH_BREAH_TIME) {
-      afternoon1 = morning2 + MINIMUM_LUNCH_BREAH_TIME
+    if (afternoon1 - morning2 < getMinimumLunchBreakTime()) {
+      afternoon1 = morning2 + getMinimumLunchBreakTime()
     }
 
     if (afternoon2 < afternoon1) afternoon2 = afternoon1
-    afternoonDelta = afternoon2 - afternoon1 - AFTERNOON_BREAK_TIME
+    afternoonDelta = afternoon2 - afternoon1 - getAfternoonBreakTime()
   }
 
   return {
@@ -1052,7 +1424,7 @@ function validateWorkHours (value, modifiedElement) {
     newHoursValues.push(previousTimeValue)
   })
 
-  const dailyTimeRaw = convertToTimeDeltaString(DAILY_REQUIRED_TIME, ':', ':')
+  const dailyTimeRaw = convertToTimeDeltaString(getDailyRequiredTime(), ':', ':')
   let workedHours
 
   if (newHoursValues.length !== 4) {
@@ -1354,26 +1726,26 @@ function getEstimatedExtraTimeAtTheEndOfTheDay (day) {
   let afternoon2 = getEndAfternoonTime(day)
 
   if (morning1 === null) {
-    morning1 = RECOMMENDED_BEGINNING_WORKING_TIME
+    morning1 = getRecommendedBeginningWorkingTime()
     morning2 = null
     afternoon1 = null
     afternoon2 = null
   }
 
   if (morning2 === null) {
-    morning2 = RECOMMENDED_BEGINNING_LUNCH_TIME
+    morning2 = getRecommendedBeginningLunchTime()
     afternoon1 = null
     afternoon2 = null
   }
 
   if (afternoon1 === null) {
-    afternoon1 = RECOMMENDED_ENDING_LUNCH_TIME
+    afternoon1 = getRecommendedEndingLunchTime()
     afternoon2 = null
   }
 
   if (afternoon2 === null) {
     if (day > getNow().getDay() - 1) {
-      afternoon2 = RECOMMENDED_ENDING_WORKING_TIME
+      afternoon2 = getRecommendedEndingWorkingTime()
     } else {
       let estimatedLeavingTime = dailyWorkedTime[day].dailyDelta
       estimatedLeavingTime -= extraHoursAdded
@@ -1400,7 +1772,7 @@ function getEstimatedExtraTimeAtTheEndOfTheDay (day) {
     afternoon2
   )
 
-  return workedHoursDeltaTime - DAILY_REQUIRED_TIME
+  return workedHoursDeltaTime - getDailyRequiredTime()
 }
 
 // Tell whether a new month occurs this week.
@@ -1425,7 +1797,7 @@ function addWorkedHours () {
   generateDetailsContainerElement()
 
   if (isNewMonth()) {
-    globalCounterTime = Math.min(HIGHEST_MONTHLY_EXTRA_TIME, globalCounterTime)
+    globalCounterTime = Math.min(getHighestMonthlyExtraTime(), globalCounterTime)
   }
 
   const weekLabel = getWeekLabel()
@@ -1463,28 +1835,34 @@ function addWorkedHours () {
     const afternoonTag = declarationList.children[2 * day + 1].innerHTML
     let currentTotalSeconds = 0
 
-    if (DAYS_OFF_TAGS.includes(morningTag)) {
-      totalDayOffSeconds += MORNING_TIME
-      currentTotalSeconds += MORNING_TIME
+    if (isDayOffTag(morningTag)) {
+      totalDayOffSeconds += getMorningTime()
+      currentTotalSeconds += getMorningTime()
 
-      if (morningTag === 'RV') {
-        overtimeCompensationTime += MORNING_TIME
+      if (morningTag === OVERTIME_COMPENSATION_TAG &&
+        getSettingsValue(
+          IS_OVERTIME_COMPENSATION_KEY,
+          DEFAULT_IS_OVERTIME_COMPENSATION)) {
+        overtimeCompensationTime += getMorningTime()
       }
-    } else if (NATIONAL_HOLIDAY_TAGS.includes(morningTag)) {
-      totalNationalHolidaySeconds += MORNING_TIME
-      currentTotalSeconds += MORNING_TIME
+    } else if (isNationalHolidayTag(morningTag)) {
+      totalNationalHolidaySeconds += getMorningTime()
+      currentTotalSeconds += getMorningTime()
     }
 
-    if (DAYS_OFF_TAGS.includes(afternoonTag)) {
-      totalDayOffSeconds += AFTERNOON_TIME
-      currentTotalSeconds += AFTERNOON_TIME
+    if (isDayOffTag(afternoonTag)) {
+      totalDayOffSeconds += getAfternoonTime()
+      currentTotalSeconds += getAfternoonTime()
 
-      if (afternoonTag === 'RV') {
-        overtimeCompensationTime += AFTERNOON_TIME
+      if (afternoonTag === OVERTIME_COMPENSATION_TAG &&
+        getSettingsValue(
+          IS_OVERTIME_COMPENSATION_KEY,
+          DEFAULT_IS_OVERTIME_COMPENSATION)) {
+        overtimeCompensationTime += getAfternoonTime()
       }
-    } else if (NATIONAL_HOLIDAY_TAGS.includes(afternoonTag)) {
-      totalNationalHolidaySeconds += AFTERNOON_TIME
-      currentTotalSeconds += AFTERNOON_TIME
+    } else if (isNationalHolidayTag(afternoonTag)) {
+      totalNationalHolidaySeconds += getAfternoonTime()
+      currentTotalSeconds += getAfternoonTime()
     }
 
     currentTotalSeconds +=
@@ -1515,7 +1893,7 @@ function addWorkedHours () {
     dailyWorkedTime[day].daily += currentTotalSeconds
 
     const dailyDeltaTotalSeconds =
-      dailyWorkedTime[day].daily - DAILY_REQUIRED_TIME
+      dailyWorkedTime[day].daily - getDailyRequiredTime()
     dailyWorkedTime[day].dailyDelta = dailyDeltaTotalSeconds
 
     cumulatedDeltaTotalSeconds += dailyDeltaTotalSeconds
@@ -1558,8 +1936,8 @@ function addWorkedHours () {
   setStyle(
     extraHoursEndWeekContainer,
     getDeltaValueStyle(
-      LOWEST_TOTAL_EXTRA_TIME,
-      HIGHEST_WEEKLY_EXTRA_TIME,
+      getLowestExtraTotalTime(),
+      getHighestWeeklyExtraTime(),
       currentGlobalCounterTime,
       COUNTER_SIZE_CSS
     )
@@ -1595,7 +1973,7 @@ function addWorkedHours () {
   }
 
   let estimatedExtraHoursEndWeek = getBeginningOfTheWeekExtraTime() +
-    Math.min(currentExtraTime, HIGHEST_WEEKLY_EXTRA_TIME)
+    Math.min(currentExtraTime, getHighestWeeklyExtraTime())
 
   if (currentGlobalCounterTime < estimatedExtraHoursEndWeek) {
     currentGlobalCounterTime = estimatedExtraHoursEndWeek
@@ -1603,10 +1981,10 @@ function addWorkedHours () {
 
   estimatedExtraHoursEndWeek -= overtimeCompensationTime
 
-  // New month. So, the maximum of extra time is HIGHEST_MONTHLY_EXTRA_TIME.
+  // New month. So, the maximum of extra time is getHighestMonthlyExtraTime().
   if (monday.getDate() > sunday.getDate()) {
     estimatedExtraHoursEndWeek =
-      Math.min(estimatedExtraHoursEndWeek, HIGHEST_MONTHLY_EXTRA_TIME)
+      Math.min(estimatedExtraHoursEndWeek, getHighestMonthlyExtraTime())
   }
 
   const extraHoursEndWeekEstimatedContainer =
@@ -1615,8 +1993,8 @@ function addWorkedHours () {
   setStyle(
     extraHoursEndWeekEstimatedContainer,
     getDeltaValueStyle(
-      LOWEST_TOTAL_EXTRA_TIME,
-      HIGHEST_WEEKLY_EXTRA_TIME,
+      getLowestExtraTotalTime(),
+      getHighestWeeklyExtraTime(),
       estimatedExtraHoursEndWeek,
       COUNTER_SIZE_CSS
     )
@@ -1626,14 +2004,14 @@ function addWorkedHours () {
     estimatedExtraHoursEndWeek
   )
 
-  const timeDelta = totalSeconds - WEEK_TIME
+  const timeDelta = totalSeconds - getWeekTime()
   const globalCounterElement = document.getElementById(GLOBAL_COUNTER_ID)
 
   setStyle(
     globalCounterElement,
     getDeltaValueStyle(
       0,
-      WEEKLY_REQUIRED_TIME,
+      getWeeklyRequiredTime(),
       totalSeconds,
       COUNTER_SIZE_CSS
     )
@@ -1654,7 +2032,7 @@ function addWorkedHours () {
   setStyle(
     weekDeltaElement,
     getDeltaValueStyle(
-      -WEEKLY_REQUIRED_TIME,
+      -getWeeklyRequiredTime(),
       0,
       timeDelta,
       COUNTER_SIZE_CSS
@@ -1672,7 +2050,7 @@ function addWorkedHours () {
     setStyle(
       dayDeltaElement,
       getDeltaValueStyle(
-        -DAILY_REQUIRED_TIME,
+        -getDailyRequiredTime(),
         0,
         progressTimeDelta,
         COUNTER_SIZE_CSS
@@ -1704,10 +2082,10 @@ function generateLeavingTime (day, currentDay, secondsDelta) {
       minutes: currentDate.getMinutes()
     })
   } else {
-    currentTotalSeconds = RECOMMENDED_BEGINNING_WORKING_TIME
+    currentTotalSeconds = getRecommendedBeginningWorkingTime()
     endMorningTime = ''
     beginningAfternoonTime = ''
-    secondsDelta += (day - currentDay + 1) * DAILY_REQUIRED_TIME
+    secondsDelta += (day - currentDay + 1) * getDailyRequiredTime()
   }
 
   const isAfternoon =
@@ -1722,10 +2100,11 @@ function generateLeavingTime (day, currentDay, secondsDelta) {
     const endMorningTimeSeconds = parseTime(endMorningTime)
 
     offsetSeconds =
-      AFTERNOON_BREAK_TIME + RECOMMENDED_LUNCH_BREAK_TIME -
+      getAfternoonBreakTime() + getRecommendedLunchBreakTime() -
       (currentTotalSeconds - endMorningTimeSeconds)
   } else if (isMorning) {
-    offsetSeconds = AFTERNOON_BREAK_TIME + RECOMMENDED_LUNCH_BREAK_TIME
+    offsetSeconds = getAfternoonBreakTime() +
+      getRecommendedLunchBreakTime()
   } else {
     offsetSeconds = 0
   }
@@ -1733,8 +2112,8 @@ function generateLeavingTime (day, currentDay, secondsDelta) {
   const leavingTime = currentTotalSeconds + secondsDelta * -1 + offsetSeconds
 
   return Math.min(
-    Math.max(leavingTime, MINIMUM_LEAVING_WORKING_TIME),
-    MAXIMUM_WORKING_TIME
+    Math.max(leavingTime, getMinimumLeavingWorkingTime()),
+    getMaximumLeavingWorkingTime()
   )
 }
 
@@ -2029,11 +2408,11 @@ function generateDetailsContainerElement () {
         <span title="Heures comptées via les jours fériés."><span style="user-select: none;">Jours fériés : </span><span id="${NATIONAL_HOLIDAY_HOURS_ID}" style="user-select: all;">-</span></span></span>
       </div>
       <div>
-        <div title="Temps delta cumulé : jusqu'à aujourd'hui inclus, il faut avoir travaillé ${getNow().getDay()} fois ${convertToTimeDeltaString(DAILY_REQUIRED_TIME)} si on veut respecter les ${convertToTimeDeltaString(WEEKLY_REQUIRED_TIME)} demandés pour une semaine. Le temps des jours de congés (et autres événements) y est compté.">
+        <div title="Temps delta cumulé : jusqu'à aujourd'hui inclus, il faut avoir travaillé ${getNow().getDay()} fois ${convertToTimeDeltaString(getDailyRequiredTime())} si on veut respecter les ${convertToTimeDeltaString(getWeeklyRequiredTime())} demandés pour une semaine. Le temps des jours de congés (et autres événements) y est compté.">
           ${getDashboardHeader('Delta journalier cumulé 🥐 :')}<br>
           ${getDashboardValue(DAY_DELTA_ID)}<br><br>
         </div>
-        <div title="Nombre d'heures restantes à travailler pour une semaine complète (à savoir, ${convertToTimeDeltaString(WEEKLY_REQUIRED_TIME)} en tout). Le temps des jours de congés (et autres événements) y est compté.">
+        <div title="Nombre d'heures restantes à travailler pour une semaine complète (à savoir, ${convertToTimeDeltaString(getWeeklyRequiredTime())} en tout). Le temps des jours de congés (et autres événements) y est compté.">
           ${getDashboardHeader('Delta journalier total :')}<br>
           ${getDashboardValue(WEEK_DELTA_ID)}
         </div>
@@ -2041,19 +2420,19 @@ function generateDetailsContainerElement () {
       <div>
         <div title="Nombre d'heures supplémentaires en début de semaine (récupérées en demandant directement à l'API de l'ADP).">
           ${getDashboardHeader('Heures supplémentaires (début de semaine) :')}<br>
-          ${getDashboardValue(EXTRA_HOURS_BEGINNING_WEEK_ID, getWeekLabel() === WEEK_FUTURE ? null : convertToTimeDeltaString(getBeginningOfTheWeekExtraTime()), getDeltaValueStyle(LOWEST_TOTAL_EXTRA_TIME, HIGHEST_WEEKLY_EXTRA_TIME, getBeginningOfTheWeekExtraTime(), COUNTER_SIZE_CSS))}<br><br>
+          ${getDashboardValue(EXTRA_HOURS_BEGINNING_WEEK_ID, getWeekLabel() === WEEK_FUTURE ? null : convertToTimeDeltaString(getBeginningOfTheWeekExtraTime()), getDeltaValueStyle(getLowestExtraTotalTime(), getHighestWeeklyExtraTime(), getBeginningOfTheWeekExtraTime(), COUNTER_SIZE_CSS))}<br><br>
         </div>
         ${getDashboardHeader('Heures supplémentaires (fin de semaine) :')}<br>
         <div style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: space-evenly; position: relative; right: 30px">
-          <div title="Nombre d'heures supplémentaires actuellement gagnées (vis-à-vis du temps de travail journalier requis de ${convertToTimeDeltaString(DAILY_REQUIRED_TIME)} à effectuer dans la semaine).">
+          <div title="Nombre d'heures supplémentaires actuellement gagnées (vis-à-vis du temps de travail journalier requis de ${convertToTimeDeltaString(getDailyRequiredTime())} à effectuer dans la semaine).">
             <span style="font-size: 0.9em; user-select: none;">Actuelles :</span><br>
             ${getDashboardValue(EXTRA_HOURS_END_WEEK_ID)}
           </div>
           <div title="Estimation du nombre d'heures en fin de semaine.
 
-l'estimateur part du principe que ${convertToTimeDeltaString(DAILY_REQUIRED_TIME)} d'heures de travail journalier sont effectuées pour la semaine restante.
+l'estimateur part du principe que ${convertToTimeDeltaString(getDailyRequiredTime())} d'heures de travail journalier sont effectuées pour la semaine restante.
 
-Prend en compte les ${convertToTimeDeltaString(HIGHEST_WEEKLY_EXTRA_TIME)} maximum d'heures supplémentaires par semaine, et les ${convertToTimeDeltaString(HIGHEST_MONTHLY_EXTRA_TIME)} maximum d'heures supplémentaires par mois (si le nouveau mois arrive dans la semaine).">
+Prend en compte les ${convertToTimeDeltaString(getHighestWeeklyExtraTime())} maximum d'heures supplémentaires par semaine, et les ${convertToTimeDeltaString(getHighestMonthlyExtraTime())} maximum d'heures supplémentaires par mois (si le nouveau mois arrive dans la semaine).">
             <span style="font-size: 0.9em; user-select: none;">Estimées :</span><br>
             ${getDashboardValue(EXTRA_HOURS_END_WEEK_ESTIMATED_ID)}
           </div>
@@ -2083,13 +2462,13 @@ Prend en compte les ${convertToTimeDeltaString(HIGHEST_WEEKLY_EXTRA_TIME)} maxim
     tdLeaveTime.style.cursor = 'default'
 
     let minimumLeavingWorkingTimeDelta =
-      convertToTimeDeltaString(MINIMUM_LEAVING_WORKING_TIME)
+      convertToTimeDeltaString(getMinimumLeavingWorkingTime())
     minimumLeavingWorkingTimeDelta = minimumLeavingWorkingTimeDelta.slice(
       1, minimumLeavingWorkingTimeDelta.length - 1
     )
 
     let maximumLeavingWorkingTimeDelta =
-      convertToTimeDeltaString(MAXIMUM_WORKING_TIME)
+      convertToTimeDeltaString(getMaximumLeavingWorkingTime())
     maximumLeavingWorkingTimeDelta = maximumLeavingWorkingTimeDelta.slice(
       1, maximumLeavingWorkingTimeDelta.length - 1
     )
@@ -2097,7 +2476,7 @@ Prend en compte les ${convertToTimeDeltaString(HIGHEST_WEEKLY_EXTRA_TIME)} maxim
     if (weekLabel === WEEK_PRESENT && currentDay === day) {
       tdLeaveTime.title = `Delta pour une journée de travail + heure recommandée pour partir (si nécessaire)
 
-L'heure recommandée pour partir si vous désirez respecter (si possible) le nombre d'heures de travail journalier de ${convertToTimeDeltaString(DAILY_REQUIRED_TIME)}.
+L'heure recommandée pour partir si vous désirez respecter (si possible) le nombre d'heures de travail journalier de ${convertToTimeDeltaString(getDailyRequiredTime())}.
 À noter que l'heure recommandée ne pourra être avant ${minimumLeavingWorkingTimeDelta} ou après ${maximumLeavingWorkingTimeDelta}.
 `
     } else {
@@ -2114,7 +2493,7 @@ L'heure recommandée pour partir si vous désirez respecter (si possible) le nom
     if (weekLabel === WEEK_PRESENT && currentDay === day) {
       tdLeaveTime.title = `Delta cumulé sur la semaine + heure recommandée pour partir (si nécessaire)
 
-L'heure recommandée pour partir si vous désirez respecter (si possible) le nombre d'heures de travail requises après la journée actuelle (à savoir ${convertToTimeDeltaString(DAILY_REQUIRED_TIME * (day + 1))}).
+L'heure recommandée pour partir si vous désirez respecter (si possible) le nombre d'heures de travail requises après la journée actuelle (à savoir ${convertToTimeDeltaString(getDailyRequiredTime() * (day + 1))}).
 À noter que l'heure recommandée ne pourra être avant ${minimumLeavingWorkingTimeDelta} ou après ${maximumLeavingWorkingTimeDelta}.
 `
     } else {
@@ -2336,6 +2715,265 @@ Note : pour le moment, il faut garder l'onglet des horaires OUVERT pour que les 
 
   endNotificationsCheckboxInput.addEventListener(
     'change', handleEndNotificationsCheckboxChange
+  )
+}
+
+// Display or hide the advanced settings.
+function handleAdvancedSettingsToggle (isDisplayed) {
+  if (isAdvancedSettingsPanelVisible === isDisplayed) {
+    return
+  }
+
+  isAdvancedSettingsPanelVisible = isDisplayed
+  const advancedSettingsContainer = document.getElementById(ADVANCED_SETTINGS_MODAL_ID)
+  advancedSettingsContainer.style.display = isAdvancedSettingsPanelVisible ? 'block' : 'none'
+}
+
+// Display or hide the advanced settings when clicking on the related button.
+function handleAdvancedSettingsButtonClick (event) {
+  event.stopPropagation()
+  handleAdvancedSettingsToggle(!isAdvancedSettingsPanelVisible)
+}
+
+// Hide the advanced settings when focusing out of its container.
+function handleAdvancedSettingsFocusOut (event) {
+  event.stopPropagation()
+  handleAdvancedSettingsToggle(false)
+}
+
+// Handle clicks on the advanced settings container.
+function handleAdvancedSettingsClick (event) {
+  event.stopPropagation()
+}
+
+// Handle clicks on the advanced settings save button.
+function handleAdvancedSettingsSaveButtonClick (event) {
+  event.stopPropagation()
+  saveAdvancedSettings()
+  handleAdvancedSettingsToggle(false)
+  refreshPage(true)
+}
+
+// Handle clicks on the advanced settings restore button.
+function handleAdvancedSettingsRestoreButtonClick (event) {
+  event.stopPropagation()
+  resetAdvancedSettings()
+  setAdvancedSettingsContainer()
+  refreshPage(true)
+}
+
+// Set the advanced settings container.
+function setAdvancedSettingsContainer () {
+  const oldModal = document.getElementById(ADVANCED_SETTINGS_MODAL_ID)
+
+  if (oldModal !== null) {
+    oldModal.remove()
+  }
+
+  const advancedSettingsButton = document.createElement('div')
+
+  advancedSettingsButton.innerHTML = `
+    <div style="height: 50px; width: 50px; background-color: #DC2033; border-radius: 50%; display: inline-block; position: fixed; right: 15px; bottom: 15px; z-index: 1001; box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; display: flex; justify-content: center; cursor: pointer; user-select: none;" title="Paramètres avancés">
+      <img src="https://i.imgur.com/BG7lE0I.png" alt="Icône des paramètres avancés" width="25" height="25" style="margin: auto;">
+    </div>
+  `
+  document.body.appendChild(advancedSettingsButton)
+
+  const advancedSettingsModal = document.createElement('div')
+  const labelSize = '0.9em'
+  const entryMargin = '15px'
+  const subEntryMargin = '30px'
+
+  advancedSettingsModal.innerHTML = `
+    <div id="${ADVANCED_SETTINGS_MODAL_ID}" style="display: ${isAdvancedSettingsPanelVisible ? 'block' : 'none'};">
+      <div id="${ADVANCED_SETTINGS_CONTAINER_ID}" style="position: fixed; width: 80%; height: 80%; margin: auto; left: 0; right: 0; z-index: 1003; user-select: none; background: #455A64; border-radius: 5px; top: 0; bottom: 0; padding: 15px; color: white; font-size: 1.3em; overflow-y: auto;">
+        <div>
+          <h1>Configuration de la simulation</h1>
+          <div>
+            <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Prise en compte des événements</h2>
+            <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration de l'activation des événements à prendre en compte dans la simulation.">
+              <div style="cursor: pointer;" title="Prise en compte de la récupération d'horaires variables dans la simulation.">
+                <input style="cursor: pointer;" type="checkbox" name="${OVERTIME_COMPENSATION_CHECKBOX_NAME}" id="${IS_OVERTIME_COMPENSATION_CHECKBOX_ID}" ${isOvertimeCompensation() ? 'checked' : ''}>
+                <label for="${IS_OVERTIME_COMPENSATION_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Récupération horaire variable (${OVERTIME_COMPENSATION_TAG})</label>
+              </div>
+
+              <div style="cursor: pointer;" title="Prise en compte des congés payés dans la simulation.">
+                <input style="cursor: pointer;" type="checkbox" name="${DAYS_OFF_CHECKBOX_NAME}" id="${ARE_DAYS_OFF_CHECKBOX_ID}" ${areDaysOff() ? 'checked' : ''}>
+                <label for="${ARE_DAYS_OFF_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Congés payés (${DAYS_OFF_TAG})</label>
+              </div>
+
+              <div style="cursor: pointer;" title="Prise en compte des congés sans solde dans la simulation.">
+                <input style="cursor: pointer;" type="checkbox" name="${UNPAID_TIME_OFF_CHECKBOX_NAME}" id="${IS_UNPAID_TIME_OFF_CHECKBOX_ID}" ${isUnpaidTimeOff() ? 'checked' : ''}>
+                <label for="${IS_UNPAID_TIME_OFF_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Des congés sans solde (${UNPAID_TIME_OFF_TAG})</label>
+              </div>
+
+              <div style="cursor: pointer;" title="Prise en compte des jours fériés dans la simulation.">
+                <input style="cursor: pointer;" type="checkbox" name="${NATIONAL_HOLIDAY_CHECKBOX_NAME}" id="${ARE_NATIONAL_HOLIDAY_CHECKBOX_ID}" ${areNationalHolidays() ? 'checked' : ''}>
+                <label for="${ARE_NATIONAL_HOLIDAY_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Des jours fériés (${NATIONAL_HOLIDAY_TAG})</label>
+              </div>
+
+              <div style="cursor: pointer;" title="Prise en compte des arrêts maladie dans la simulation.">
+                <input style="cursor: pointer;" type="checkbox" name="${SICK_DAYS_CHECKBOX_NAME}" id="${ARE_SICK_DAYS_CHECKBOX_ID}" ${areSickDays() ? 'checked' : ''}>
+                <label for="${ARE_SICK_DAYS_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Des arrêts maladie (${SICK_DAYS_TAG})</label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Temps de travail requis</h2>
+            <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration du temps minimal requis par l'entreprise.">
+              <div>
+                <label for="${MORNING_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Matin</label>
+                <input type="number" name="${MORNING_HOURS_INPUT_NAME}" id="${MORNING_HOURS_INPUT_ID}" placeholder="${DEFAULT_MORNING_HOURS}" style="width: 40px;" value="${getSettingsValue(MORNING_HOURS_KEY, DEFAULT_MORNING_HOURS)}">h
+                <input type="number" name="${MORNING_MINUTES_INPUT_NAME}" id="${MORNING_MINUTES_INPUT_ID}" placeholder="${DEFAULT_MORNING_MINUTES}" style="width: 40px;" value="${getSettingsValue(MORNING_MINUTES_KEY, DEFAULT_MORNING_MINUTES)}">
+              </div>
+              <div>
+                <label for="${AFTERNOON_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Après-midi</label>
+                <input type="number" name="${AFTERNOON_HOURS_INPUT_NAME}" id="${AFTERNOON_HOURS_INPUT_ID}" placeholder="${DEFAULT_AFTERNOON_HOURS}" style="width: 40px;" value="${getSettingsValue(AFTERNOON_HOURS_KEY, DEFAULT_AFTERNOON_HOURS)}">h
+                <input type="number" name="${AFTERNOON_MINUTES_INPUT_NAME}" id="${AFTERNOON_MINUTES_INPUT_ID}" placeholder="${DEFAULT_AFTERNOON_MINUTES}" style="width: 40px;" value="${getSettingsValue(AFTERNOON_MINUTES_KEY, DEFAULT_AFTERNOON_MINUTES)}">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Départs et arrivées</h2>
+            <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration des horaires d'arrivée et de départ.">
+              <div>
+                <label for="${MINIMUM_BEGINNING_WORKING_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure minimale d'arrivée</label>
+                <input type="number" name="${MINIMUM_BEGINNING_WORKING_HOURS_INPUT_NAME}" id="${MINIMUM_BEGINNING_WORKING_HOURS_INPUT_ID}" placeholder="${DEFAULT_MINIMUM_BEGINNING_WORKING_HOURS}" style="width: 40px;" value="${getSettingsValue(MINIMUM_BEGINNING_WORKING_HOURS_KEY, DEFAULT_MINIMUM_BEGINNING_WORKING_HOURS)}">h
+                <input type="number" name="${MINIMUM_BEGINNING_WORKING_MINUTES_INPUT_NAME}" id="${MINIMUM_BEGINNING_WORKING_MINUTES_INPUT_ID}" placeholder="${DEFAULT_MINIMUM_BEGINNING_WORKING_MINUTES}" style="width: 40px;" value="${getSettingsValue(MINIMUM_BEGINNING_WORKING_MINUTES_KEY, DEFAULT_MINIMUM_BEGINNING_WORKING_MINUTES)}">
+              </div>
+              <div>
+                <label for="${MINIMUM_LEAVING_WORKING_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure minimale de départ</label>
+                <input type="number" name="${MINIMUM_LEAVING_WORKING_HOURS_INPUT_NAME}" id="${MINIMUM_LEAVING_WORKING_HOURS_INPUT_ID}" placeholder="${DEFAULT_MINIMUM_LEAVING_WORKING_HOURS}" style="width: 40px;" value="${getSettingsValue(MINIMUM_LEAVING_WORKING_HOURS_KEY, DEFAULT_MINIMUM_LEAVING_WORKING_HOURS)}">h
+                <input type="number" name="${MINIMUM_LEAVING_WORKING_MINUTES_INPUT_NAME}" id="${MINIMUM_LEAVING_WORKING_MINUTES_INPUT_ID}" placeholder="${DEFAULT_MINIMUM_LEAVING_WORKING_MINUTES}" style="width: 40px;" value="${getSettingsValue(MINIMUM_LEAVING_WORKING_MINUTES_KEY, DEFAULT_MINIMUM_LEAVING_WORKING_MINUTES)}">
+              </div>
+              <div>
+                <label for="${MAXIMUM_LEAVING_WORKING_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure maximale de départ</label>
+                <input type="number" name="${MAXIMUM_LEAVING_WORKING_HOURS_INPUT_NAME}" id="${MAXIMUM_LEAVING_WORKING_HOURS_INPUT_ID}" placeholder="${DEFAULT_MAXIMUM_LEAVING_WORKING_HOURS}" style="width: 40px;" value="${getSettingsValue(MAXIMUM_LEAVING_WORKING_HOURS_KEY, DEFAULT_MAXIMUM_LEAVING_WORKING_HOURS)}">h
+                <input type="number" name="${MAXIMUM_LEAVING_WORKING_MINUTES_INPUT_NAME}" id="${MAXIMUM_LEAVING_WORKING_MINUTES_INPUT_ID}" placeholder="${DEFAULT_MAXIMUM_LEAVING_WORKING_MINUTES}" style="width: 40px;" value="${getSettingsValue(MAXIMUM_LEAVING_WORKING_MINUTES_KEY, DEFAULT_MAXIMUM_LEAVING_WORKING_MINUTES)}">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Temps de pause</h2>
+            <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration des temps de pause.">
+              <div>
+                <label for="${MINIMUM_LUNCH_BREAK_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps minimum le midi</label>
+                <input type="number" name="${MINIMUM_LUNCH_BREAK_HOURS_INPUT_NAME}" id="${MINIMUM_LUNCH_BREAK_HOURS_INPUT_ID}" placeholder="${DEFAULT_MINIMUM_LUNCH_BREAK_HOURS}" style="width: 40px;" value="${getSettingsValue(MINIMUM_LUNCH_BREAK_HOURS_KEY, DEFAULT_MINIMUM_LUNCH_BREAK_HOURS)}">h
+                <input type="number" name="${MINIMUM_LUNCH_BREAK_MINUTES_INPUT_NAME}" id="${MINIMUM_LUNCH_BREAK_MINUTES_INPUT_ID}" placeholder="${DEFAULT_MINIMUM_LUNCH_BREAK_MINUTES}" style="width: 40px;" value="${getSettingsValue(MINIMUM_LUNCH_BREAK_MINUTES_KEY, DEFAULT_MINIMUM_LUNCH_BREAK_MINUTES)}">
+              </div>
+              <div>
+                <label for="${MORNING_BREAK_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps de pause le matin</label>
+                <input type="number" name="${MORNING_BREAK_HOURS_INPUT_NAME}" id="${MORNING_BREAK_HOURS_INPUT_ID}" placeholder="${DEFAULT_MORNING_BREAK_HOURS}" style="width: 40px;" value="${getSettingsValue(MORNING_BREAK_HOURS_KEY, DEFAULT_MORNING_BREAK_HOURS)}">h
+                <input type="number" name="${MORNING_BREAK_MINUTES_INPUT_NAME}" id="${MORNING_BREAK_MINUTES_INPUT_ID}" placeholder="${DEFAULT_MORNING_BREAK_MINUTES}" style="width: 40px;" value="${getSettingsValue(MORNING_BREAK_MINUTES_KEY, DEFAULT_MORNING_BREAK_MINUTES)}">
+              </div>
+              <div>
+                <label for="${AFTERNOON_BREAK_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps de pause l'après midi</label>
+                <input type="number" name="${AFTERNOON_BREAK_HOURS_INPUT_NAME}" id="${AFTERNOON_BREAK_HOURS_INPUT_ID}" placeholder="${DEFAULT_AFTERNOON_BREAK_HOURS}" style="width: 40px;" value="${getSettingsValue(AFTERNOON_BREAK_HOURS_KEY, DEFAULT_AFTERNOON_BREAK_HOURS)}">h
+                <input type="number" name="${AFTERNOON_BREAK_MINUTES_INPUT_NAME}" id="${AFTERNOON_BREAK_MINUTES_INPUT_ID}" placeholder="${DEFAULT_AFTERNOON_BREAK_MINUTES}" style="width: 40px;" value="${getSettingsValue(AFTERNOON_BREAK_MINUTES_KEY, DEFAULT_AFTERNOON_BREAK_MINUTES)}">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Heures recommandées</h2>
+            <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration des heures recommandées.">
+              <div>
+                <label for="${RECOMMENDED_BEGINNING_WORKING_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure d'arrivée recommandée</label>
+                <input type="number" name="${RECOMMENDED_BEGINNING_WORKING_HOURS_INPUT_NAME}" id="${RECOMMENDED_BEGINNING_WORKING_HOURS_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_BEGINNING_WORKING_HOURS}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_BEGINNING_WORKING_HOURS_KEY, DEFAULT_RECOMMENDED_BEGINNING_WORKING_HOURS)}">h
+                <input type="number" name="${RECOMMENDED_BEGINNING_WORKING_MINUTES_INPUT_NAME}" id="${RECOMMENDED_BEGINNING_WORKING_MINUTES_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_BEGINNING_WORKING_MINUTES}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_BEGINNING_WORKING_MINUTES_KEY, DEFAULT_RECOMMENDED_BEGINNING_WORKING_MINUTES)}">
+              </div>
+              <div>
+                <label for="${RECOMMENDED_BEGINNING_LUNCH_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure de fin de pause midi recommandée</label>
+                <input type="number" name="${RECOMMENDED_BEGINNING_LUNCH_HOURS_INPUT_NAME}" id="${RECOMMENDED_BEGINNING_LUNCH_HOURS_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_BEGINNING_LUNCH_HOURS}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_BEGINNING_LUNCH_HOURS_KEY, DEFAULT_RECOMMENDED_BEGINNING_LUNCH_HOURS)}">h
+                <input type="number" name="${RECOMMENDED_BEGINNING_LUNCH_MINUTES_INPUT_NAME}" id="${RECOMMENDED_BEGINNING_LUNCH_MINUTES_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_BEGINNING_LUNCH_MINUTES}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_BEGINNING_LUNCH_MINUTES_KEY, DEFAULT_RECOMMENDED_BEGINNING_LUNCH_MINUTES)}">
+              </div>
+              <div>
+                <label for="${RECOMMENDED_ENDING_LUNCH_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure de fin de pause midi recommandée</label>
+                <input type="number" name="${RECOMMENDED_ENDING_LUNCH_HOURS_INPUT_NAME}" id="${RECOMMENDED_ENDING_LUNCH_HOURS_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_ENDING_LUNCH_HOURS}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_ENDING_LUNCH_HOURS_KEY, DEFAULT_RECOMMENDED_ENDING_LUNCH_HOURS)}">h
+                <input type="number" name="${RECOMMENDED_ENDING_LUNCH_MINUTES_INPUT_NAME}" id="${RECOMMENDED_ENDING_LUNCH_MINUTES_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_ENDING_LUNCH_MINUTES}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_ENDING_LUNCH_MINUTES_KEY, DEFAULT_RECOMMENDED_ENDING_LUNCH_MINUTES)}">
+              </div>
+              <div>
+                <label for="${RECOMMENDED_ENDING_WORKING_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Heure de départ recommandée</label>
+                <input type="number" name="${RECOMMENDED_ENDING_WORKING_HOURS_INPUT_NAME}" id="${RECOMMENDED_ENDING_WORKING_HOURS_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_ENDING_WORKING_HOURS}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_ENDING_WORKING_HOURS_KEY, DEFAULT_RECOMMENDED_ENDING_WORKING_HOURS)}">h
+                <input type="number" name="${RECOMMENDED_ENDING_WORKING_MINUTES_INPUT_NAME}" id="${RECOMMENDED_ENDING_WORKING_MINUTES_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_ENDING_WORKING_MINUTES}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_ENDING_WORKING_MINUTES_KEY, DEFAULT_RECOMMENDED_ENDING_WORKING_MINUTES)}">
+              </div>
+              <div>
+                <label for="${RECOMMENDED_LUNCH_BREAK_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps de pause midi recommandé</label>
+                <input type="number" name="${RECOMMENDED_LUNCH_BREAK_HOURS_INPUT_NAME}" id="${RECOMMENDED_LUNCH_BREAK_HOURS_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_LUNCH_BREAK_HOURS}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_LUNCH_BREAK_HOURS_KEY, DEFAULT_RECOMMENDED_LUNCH_BREAK_HOURS)}">h
+                <input type="number" name="${RECOMMENDED_LUNCH_BREAK_MINUTES_INPUT_NAME}" id="${RECOMMENDED_LUNCH_BREAK_MINUTES_INPUT_ID}" placeholder="${DEFAULT_RECOMMENDED_LUNCH_BREAK_MINUTES}" style="width: 40px;" value="${getSettingsValue(RECOMMENDED_LUNCH_BREAK_MINUTES_KEY, DEFAULT_RECOMMENDED_LUNCH_BREAK_MINUTES)}">
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Delta horaire variable</h2>
+            <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration des valeurs minimales et maximales des deltas associés aux horaires variables.">
+              <div>
+                <label for="${LOWEST_TOTAL_EXTRA_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps minimal (officiellement) autorisé</label>
+                <input type="number" name="${LOWEST_TOTAL_EXTRA_HOURS_INPUT_NAME}" id="${LOWEST_TOTAL_EXTRA_HOURS_INPUT_ID}" placeholder="${DEFAULT_LOWEST_TOTAL_EXTRA_HOURS}" style="width: 40px;" value="${getSettingsValue(LOWEST_TOTAL_EXTRA_HOURS_KEY, DEFAULT_LOWEST_TOTAL_EXTRA_HOURS)}">h
+                <input type="number" name="${LOWEST_TOTAL_EXTRA_MINUTES_INPUT_NAME}" id="${LOWEST_TOTAL_EXTRA_MINUTES_INPUT_ID}" placeholder="${DEFAULT_LOWEST_TOTAL_EXTRA_MINUTES}" style="width: 40px;" value="${getSettingsValue(LOWEST_TOTAL_EXTRA_MINUTES_KEY, DEFAULT_LOWEST_TOTAL_EXTRA_MINUTES)}">
+              </div>
+              <div>
+                <label for="${HIGHEST_WEEKLY_EXTRA_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps maximal hebdomadaire</label>
+                <input type="number" name="${HIGHEST_WEEKLY_EXTRA_HOURS_INPUT_NAME}" id="${HIGHEST_WEEKLY_EXTRA_HOURS_INPUT_ID}" placeholder="${DEFAULT_HIGHEST_WEEKLY_EXTRA_HOURS}" style="width: 40px;" value="${getSettingsValue(HIGHEST_WEEKLY_EXTRA_HOURS_KEY, DEFAULT_HIGHEST_WEEKLY_EXTRA_HOURS)}">h
+                <input type="number" name="${HIGHEST_WEEKLY_EXTRA_MINUTES_INPUT_NAME}" id="${HIGHEST_WEEKLY_EXTRA_MINUTES_INPUT_ID}" placeholder="${DEFAULT_HIGHEST_WEEKLY_EXTRA_MINUTES}" style="width: 40px;" value="${getSettingsValue(HIGHEST_WEEKLY_EXTRA_MINUTES_KEY, DEFAULT_HIGHEST_WEEKLY_EXTRA_MINUTES)}">
+              </div>
+              <div>
+                <label for="${HIGHEST_TOTAL_EXTRA_HOURS_INPUT_ID}" style="font-size: ${labelSize}; width: initial; display: inline-block;">Temps maximal mensuel</label>
+                <input type="number" name="${HIGHEST_TOTAL_EXTRA_HOURS_INPUT_NAME}" id="${HIGHEST_TOTAL_EXTRA_HOURS_INPUT_ID}" placeholder="${DEFAULT_HIGHEST_TOTAL_EXTRA_HOURS}" style="width: 40px;" value="${getSettingsValue(HIGHEST_TOTAL_EXTRA_HOURS_KEY, DEFAULT_HIGHEST_TOTAL_EXTRA_HOURS)}">h
+                <input type="number" name="${HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_NAME}" id="${HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_ID}" placeholder="${DEFAULT_HIGHEST_TOTAL_EXTRA_MINUTES}" style="width: 40px;" value="${getSettingsValue(HIGHEST_TOTAL_EXTRA_MINUTES_KEY, DEFAULT_HIGHEST_TOTAL_EXTRA_MINUTES)}">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; margin-bottom: 20px; float: right;">
+            <button type="button" id="${RESTORE_DEFAULT_ADVANCED_SETTINGS_BUTTON}">Restaurer les valeurs par défaut</button>
+            <button type="button" id="${SAVE_ADVANCED_SETTINGS_BUTTON}">Sauvegarder</button>
+          </div>
+        </div>
+      </div>
+      <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 1000; background: black; background: rgba(0,0,0,0.8);"</div>
+    </div>
+  `
+
+  document.body.appendChild(advancedSettingsModal)
+  const advancedSettingsContainer = document.getElementById(ADVANCED_SETTINGS_CONTAINER_ID)
+  const saveAdvancedSettingsButton = document.getElementById(SAVE_ADVANCED_SETTINGS_BUTTON)
+  const restoreDefaultAdvancedSettingsButton = document.getElementById(RESTORE_DEFAULT_ADVANCED_SETTINGS_BUTTON)
+
+  advancedSettingsButton.removeEventListener(
+    'click', handleAdvancedSettingsButtonClick
+  )
+
+  advancedSettingsContainer.removeEventListener(
+    'click', handleAdvancedSettingsClick
+  )
+
+  saveAdvancedSettingsButton.removeEventListener(
+    'click', handleAdvancedSettingsSaveButtonClick
+  )
+
+  restoreDefaultAdvancedSettingsButton.removeEventListener(
+    'click', handleAdvancedSettingsRestoreButtonClick
+  )
+
+  advancedSettingsButton.addEventListener(
+    'click', handleAdvancedSettingsButtonClick
+  )
+
+  advancedSettingsContainer.addEventListener(
+    'click', handleAdvancedSettingsClick
+  )
+
+  saveAdvancedSettingsButton.addEventListener(
+    'click', handleAdvancedSettingsSaveButtonClick
+  )
+
+  restoreDefaultAdvancedSettingsButton.addEventListener(
+    'click', handleAdvancedSettingsRestoreButtonClick
   )
 }
 
@@ -2593,13 +3231,13 @@ function insertHoursForAGivenDay (day, hoursDescr = null) {
     // We are in the past.
     } else if (weekLabel === WEEK_PAST || currentDay > day) {
       morning1Element.innerText =
-        convertToTimeString(RECOMMENDED_BEGINNING_WORKING_TIME)
+        convertToTimeString(getRecommendedBeginningWorkingTime())
       morning2Element.innerText =
-        convertToTimeString(RECOMMENDED_BEGINNING_LUNCH_TIME)
+        convertToTimeString(getRecommendedBeginningLunchTime())
       afternoon1Element.innerText =
-        convertToTimeString(RECOMMENDED_ENDING_LUNCH_TIME)
+        convertToTimeString(getRecommendedEndingLunchTime())
       afternoon2Element.innerText =
-        convertToTimeString(RECOMMENDED_ENDING_WORKING_TIME)
+        convertToTimeString(getRecommendedEndingWorkingTime())
 
       return
     }
@@ -2610,7 +3248,7 @@ function insertHoursForAGivenDay (day, hoursDescr = null) {
       minutes: now.getMinutes()
     })
 
-    if (currentTime < RECOMMENDED_BEGINNING_WORKING_TIME) {
+    if (currentTime < getRecommendedBeginningWorkingTime()) {
       morning1Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       morning2Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       afternoon1Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
@@ -2619,9 +3257,9 @@ function insertHoursForAGivenDay (day, hoursDescr = null) {
     }
 
     morning1Element.innerText =
-      convertToTimeString(RECOMMENDED_BEGINNING_WORKING_TIME)
+      convertToTimeString(getRecommendedBeginningWorkingTime())
 
-    if (currentTime < RECOMMENDED_BEGINNING_LUNCH_TIME) {
+    if (currentTime < getRecommendedBeginningLunchTime()) {
       morning2Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       afternoon1Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       afternoon2Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
@@ -2629,24 +3267,24 @@ function insertHoursForAGivenDay (day, hoursDescr = null) {
     }
 
     morning2Element.innerText =
-      convertToTimeString(RECOMMENDED_BEGINNING_LUNCH_TIME)
+      convertToTimeString(getRecommendedBeginningLunchTime())
 
-    if (currentTime < RECOMMENDED_ENDING_LUNCH_TIME) {
+    if (currentTime < getRecommendedEndingLunchTime()) {
       afternoon1Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       afternoon2Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       return
     }
 
     afternoon1Element.innerText =
-      convertToTimeString(RECOMMENDED_ENDING_LUNCH_TIME)
+      convertToTimeString(getRecommendedEndingLunchTime())
 
-    if (currentTime < RECOMMENDED_ENDING_WORKING_TIME) {
+    if (currentTime < getRecommendedEndingWorkingTime()) {
       afternoon2Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
       return
     }
 
     afternoon2Element.innerText =
-      convertToTimeString(RECOMMENDED_ENDING_WORKING_TIME)
+      convertToTimeString(getRecommendedEndingWorkingTime())
   } else {
     if (hoursDescr.morning1 === undefined) {
       morning1Element.innerHTML = HOUR_ELEMENT_EMPTY_DEFAULT_VALUE
@@ -3015,6 +3653,12 @@ function getChangelog () {
     <ul>
       <li>L'estimation pouvait être incorrecte lorsque des heures des jours suivants étaient renseignées.</li>
     </ul>
+    <li>Ajout des paramètres avancés (le bouton rouge, en bas à droite de la fenêtre).</li>
+    <ul>
+      <li>Les paramètres avancés permettent de configurer le comportement du simulateur d'horaires. Par exemple, vous pouvez modifier les horaires de travail, le temps requis journalier, etc.</li>
+      <li>Les informations sont sauvegardées en cache, dans le navigateur.</li>
+      <li>C'est (pour le moment) un mode assez expérimental. Il se peut que vous ayez besoin de recharger la page afin de prendre en compte les nouvelles valeurs.</li>
+    </ul>
   </ul>
 `
 }
@@ -3025,6 +3669,7 @@ async function initialize () {
   setUpDebugMode()
   setEnhancedDesign()
   setSettingsContainer()
+  setAdvancedSettingsContainer()
   await requestAdpExtraHours()
   addWorkedHours()
 
@@ -3043,6 +3688,7 @@ async function initialize () {
   adpActionButton.removeEventListener('click', loadPage)
   adpCloseDetailsWindowButton.removeEventListener('click', loadPage)
   window.removeEventListener('beforeunload', handleWindowExit, false)
+  window.removeEventListener('click', handleAdvancedSettingsFocusOut, false)
   notificationWorker.removeEventListener('message', handleNotificationClick)
 
   adpPreviousButton.addEventListener('click', loadPage)
@@ -3050,6 +3696,7 @@ async function initialize () {
   adpActionButton.addEventListener('click', loadPage)
   adpCloseDetailsWindowButton.addEventListener('click', loadPage)
   window.addEventListener('beforeunload', handleWindowExit, false)
+  window.addEventListener('click', handleAdvancedSettingsFocusOut, false)
   notificationWorker.addEventListener('message', handleNotificationClick)
 
   welcomeUser()
