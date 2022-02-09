@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.4.2.0
+// @version      0.4.3.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -67,6 +67,7 @@ const ARE_DAYS_OFF_KEY = 'are-days-off-key'
 const IS_UNPAID_TIME_OFF_KEY = 'is-unpaid-time-off-key'
 const ARE_NATIONAL_HOLIDAYS_KEY = 'are-national-holiday-key'
 const ARE_SICK_DAYS_KEY = 'are-sick-days-key'
+const IS_OCCASIONAL_REMOTE_WORK_KEY = 'is-occasional-remote-work-key'
 
 const LOCAL_STORAGE_TYPES = {}
 LOCAL_STORAGE_TYPES[DEBUG_IS_DEBUG_PANEL_VISIBLE_KEY] = 'boolean'
@@ -115,6 +116,7 @@ LOCAL_STORAGE_TYPES[ARE_DAYS_OFF_KEY] = 'boolean'
 LOCAL_STORAGE_TYPES[IS_UNPAID_TIME_OFF_KEY] = 'boolean'
 LOCAL_STORAGE_TYPES[ARE_NATIONAL_HOLIDAYS_KEY] = 'boolean'
 LOCAL_STORAGE_TYPES[ARE_SICK_DAYS_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[IS_OCCASIONAL_REMOTE_WORK_KEY] = 'boolean'
 
 // Version.
 const LAST_VERSION_KEY = 'last-version'
@@ -166,6 +168,7 @@ const DAYS_OFF_TAG = 'CP'
 const UNPAID_TIME_OFF_TAG = 'CS'
 const NATIONAL_HOLIDAY_TAG = 'JF'
 const SICK_DAYS_TAG = 'MA'
+const OCCASIONAL_REMOTE_WORK_TAG = 'EF'
 const HOUR_ELEMENT_EMPTY_DEFAULT_VALUE = '&nbsp;'
 const HOUR_ELEMENT_EMPTY_VALUES = [
   HOUR_ELEMENT_EMPTY_DEFAULT_VALUE,
@@ -247,6 +250,7 @@ const DEFAULT_ARE_DAYS_OFF = true
 const DEFAULT_IS_UNPAID_TIME_OFF = true
 const DEFAULT_ARE_NATIONAL_HOLIDAYS = true
 const DEFAULT_ARE_SICK_DAYS = true
+const DEFAULT_IS_OCCASIONAL_REMOTE_WORK = true
 
 const isOvertimeCompensation = () => {
   return getSettingsValue(IS_OVERTIME_COMPENSATION_KEY, DEFAULT_IS_OVERTIME_COMPENSATION)
@@ -268,11 +272,16 @@ const areSickDays = () => {
   return getSettingsValue(ARE_SICK_DAYS_KEY, DEFAULT_ARE_SICK_DAYS)
 }
 
+const isOccasionalRemoteWork = () => {
+  return getSettingsValue(IS_OCCASIONAL_REMOTE_WORK_KEY, DEFAULT_IS_OCCASIONAL_REMOTE_WORK)
+}
+
 // Misc.
 const now = getNow()
 const ARE_COVID_HOURS_1 = now >= new Date(2021, 6, 21, 0, 0, 0, 0) &&
   now < new Date(2021, 8, 30, 0, 0, 0, 0)
-const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0)
+const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0) &&
+  now < new Date(2022, 1, 18, 0, 0, 0, 0)
 
 // REGEX.
 const TOKEN_REGEX = /c=[a-z0-9]+/
@@ -313,6 +322,7 @@ const ARE_DAYS_OFF_CHECKBOX_ID = 'are-days-off-checkbox'
 const IS_UNPAID_TIME_OFF_CHECKBOX_ID = 'is-unpaid-time-off-checkbox'
 const ARE_NATIONAL_HOLIDAY_CHECKBOX_ID = 'are-national-holiday-checkbox'
 const ARE_SICK_DAYS_CHECKBOX_ID = 'are-sick-days-checkbox'
+const IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID = 'is-occasional-remote-work-checkbox'
 const MORNING_HOURS_INPUT_NAME = 'morning-hours-input'
 const MORNING_HOURS_INPUT_ID = MORNING_HOURS_INPUT_NAME
 const MORNING_MINUTES_INPUT_NAME = 'morning-minutes-input'
@@ -392,6 +402,7 @@ const DAYS_OFF_CHECKBOX_NAME = ARE_DAYS_OFF_CHECKBOX_ID
 const UNPAID_TIME_OFF_CHECKBOX_NAME = IS_UNPAID_TIME_OFF_CHECKBOX_ID
 const NATIONAL_HOLIDAY_CHECKBOX_NAME = ARE_NATIONAL_HOLIDAY_CHECKBOX_ID
 const SICK_DAYS_CHECKBOX_NAME = ARE_SICK_DAYS_CHECKBOX_ID
+const OCCASIONAL_REMOTE_WORK_CHECKBOX_NAME = IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID
 
 // CSS.
 const NEGATIVE_DELTA_COLOR = 'red'
@@ -664,7 +675,8 @@ const ADVANCED_SETTINGS_KEYS = [
   ARE_DAYS_OFF_KEY,
   IS_UNPAID_TIME_OFF_KEY,
   ARE_NATIONAL_HOLIDAYS_KEY,
-  ARE_SICK_DAYS_KEY
+  ARE_SICK_DAYS_KEY,
+  IS_OCCASIONAL_REMOTE_WORK_KEY
 ]
 
 // Save the parameter to the local storage.
@@ -810,7 +822,23 @@ function getTimeDeltaObj (day) {
 
   let morningDelta = null
   let afternoonDelta = null
+
+  // We can just get the current date regardless of the day,
+  // as we only use the hours and minutes.
   const currentDate = getNow()
+  const currentDay = getCurrentDayNumber()
+
+  if (currentDay < day) {
+    if (morningFirstTimeList.length < 2 &&
+      morningLastTimeList.length < 2 &&
+      morningLastTimeList.length < 2 &&
+      morningLastTimeList.length < 2) {
+      return {
+        morning: 0,
+        afternoon: 0
+      }
+    }
+  }
 
   let firstTimeMorningHours = 0
   let lastTimeMorningHours = 0
@@ -1228,6 +1256,10 @@ function isDayOffTag (tag) {
   }
 
   if (tag === SICK_DAYS_TAG && areSickDays()) {
+    return true
+  }
+
+  if (tag === OCCASIONAL_REMOTE_WORK_TAG && isOccasionalRemoteWork()) {
     return true
   }
 
@@ -1784,7 +1816,7 @@ function isNewMonth () {
 }
 
 // Return the current day when estimating extra time.
-function getCurrentDayForExtraTime () {
+function getCurrentDayNumber () {
   const currentDay = getNow().getDay() - 1
 
   return Math.max(0, Math.min(currentDay, 4))
@@ -1806,7 +1838,6 @@ function addWorkedHours () {
     return
   }
 
-  const dayHoursList = document.getElementsByClassName('poi_htrav2')
   const declarationList =
     document.getElementsByClassName('declaration')[0].children[1].children[2]
 
@@ -1818,13 +1849,7 @@ function addWorkedHours () {
   extraHoursAdded = 0
   overtimeCompensationTime = 0
 
-  let currentDay = getNow().getDay()
-
-  // Yes... the starting day of the week--in the USA--is Sunday.
-  if (currentDay === 0) currentDay = 6
-  else --currentDay
-
-  const currentTimeDelta = getTimeDeltaObj(currentDay)
+  const currentDay = getCurrentDayNumber()
 
   for (let day = 0; day < DAYS_TO_COUNT; ++day) {
     dailyWorkedTime[day] = {
@@ -1833,6 +1858,7 @@ function addWorkedHours () {
 
     const morningTag = declarationList.children[2 * day].innerHTML
     const afternoonTag = declarationList.children[2 * day + 1].innerHTML
+    const currentTimeDelta = getTimeDeltaObj(day)
     let currentTotalSeconds = 0
 
     if (isDayOffTag(morningTag)) {
@@ -1848,6 +1874,8 @@ function addWorkedHours () {
     } else if (isNationalHolidayTag(morningTag)) {
       totalNationalHolidaySeconds += getMorningTime()
       currentTotalSeconds += getMorningTime()
+    } else {
+      currentTotalSeconds += currentTimeDelta.morning
     }
 
     if (isDayOffTag(afternoonTag)) {
@@ -1863,22 +1891,8 @@ function addWorkedHours () {
     } else if (isNationalHolidayTag(afternoonTag)) {
       totalNationalHolidaySeconds += getAfternoonTime()
       currentTotalSeconds += getAfternoonTime()
-    }
-
-    currentTotalSeconds +=
-      parseTime(dayHoursList[day].innerHTML
-        .split(HOUR_ELEMENT_EMPTY_DEFAULT_VALUE)[0])
-
-    if (currentTotalSeconds === 0 && currentDay === day) {
-      if (currentTimeDelta.morning !== null) {
-        totalSeconds += currentTimeDelta.morning
-        dailyWorkedTime[day].daily += currentTimeDelta.morning
-      }
-
-      if (currentTimeDelta.afternoon !== null) {
-        totalSeconds += currentTimeDelta.afternoon
-        dailyWorkedTime[day].daily += currentTimeDelta.afternoon
-      }
+    } else {
+      currentTotalSeconds += currentTimeDelta.afternoon
     }
 
     if (isGlobalCounterIncluded && weekLabel === WEEK_PRESENT) {
@@ -1950,7 +1964,7 @@ function addWorkedHours () {
   const sunday = getDaytimeOfCurrentAdpWeek(6)
   let currentExtraTime
   const isPast = weekLabel === WEEK_PAST
-  const currentDayForExtraTime = getCurrentDayForExtraTime()
+  const currentDayForExtraTime = getCurrentDayNumber()
 
   if (isPast) {
     currentExtraTime = dailyWorkedTime[4].cumulatedDelta
@@ -2214,7 +2228,7 @@ function waitToNotifyForEndingHours () {
   })
 
   const now = getNow()
-  const currentDay = now.getDay() - 1
+  const currentDay = getCurrentDayNumber()
   const startMorningTimeObj = getStartMorningTime(currentDay, false)
   const endMorningTimeObj = getEndMorningTime(currentDay, false)
   const startAfternoonTimeObj = getStartAfternoonTime(currentDay, false)
@@ -2452,7 +2466,7 @@ Prend en compte les ${convertToTimeDeltaString(getHighestWeeklyExtraTime())} max
 
   const currentDate = getNow()
   currentDate.setHours(0, 0, 0, 0)
-  const currentDay = currentDate.getDay() - 1
+  const currentDay = getCurrentDayNumber()
   const weekLabel = getWeekLabel()
 
   for (let day = 0; day < 7; ++day) {
@@ -2786,9 +2800,15 @@ function setAdvancedSettingsContainer () {
 
   advancedSettingsModal.innerHTML = `
     <div id="${ADVANCED_SETTINGS_MODAL_ID}" style="display: ${isAdvancedSettingsPanelVisible ? 'block' : 'none'};">
-      <div id="${ADVANCED_SETTINGS_CONTAINER_ID}" style="position: fixed; width: 80%; height: 80%; margin: auto; left: 0; right: 0; z-index: 1003; user-select: none; background: #455A64; border-radius: 5px; top: 0; bottom: 0; padding: 15px; color: white; font-size: 1.3em; overflow-y: auto;">
+      <div id="${ADVANCED_SETTINGS_CONTAINER_ID}" style="position: fixed; width: 80%; height: 80%; margin: auto; left: 0; right: 0; z-index: 1003; user-select: none; background: #455A64; border-radius: 5px; top: 25px; bottom: 0; padding: 15px; color: white; font-size: 1.3em; overflow-y: auto;">
         <div>
-          <h1>Configuration de la simulation</h1>
+          <div style="background: #253035; position: fixed; padding: 2em; left: 50%; top: 0px; width: 100%; transform: translateX(-50%); height: 20px;">
+            <h1 style="position: relative; left: 15px;">Configuration de la simulation</h1>
+            <div style="float: right; position: relative; bottom: 31px; right: 20px;">
+              <button type="button" id="${RESTORE_DEFAULT_ADVANCED_SETTINGS_BUTTON}">Restaurer les valeurs par défaut</button>
+              <button type="button" id="${SAVE_ADVANCED_SETTINGS_BUTTON}">Sauvegarder</button>
+            </div>
+          </div>
           <div>
             <h2 style="padding-left: ${entryMargin}; padding-top: ${entryMargin}">Prise en compte des événements</h2>
             <div style="cursor: pointer; padding-left: ${subEntryMargin};" title="Configuration de l'activation des événements à prendre en compte dans la simulation.">
@@ -2815,6 +2835,11 @@ function setAdvancedSettingsContainer () {
               <div style="cursor: pointer;" title="Prise en compte des arrêts maladie dans la simulation.">
                 <input style="cursor: pointer;" type="checkbox" name="${SICK_DAYS_CHECKBOX_NAME}" id="${ARE_SICK_DAYS_CHECKBOX_ID}" ${areSickDays() ? 'checked' : ''}>
                 <label for="${ARE_SICK_DAYS_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Des arrêts maladie (${SICK_DAYS_TAG})</label>
+              </div>
+
+              <div style="cursor: pointer;" title="Prise en compte du télétravail occasionel.">
+                <input style="cursor: pointer;" type="checkbox" name="${OCCASIONAL_REMOTE_WORK_CHECKBOX_NAME}" id="${IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID}" ${isOccasionalRemoteWork() ? 'checked' : ''}>
+                <label for="${IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Du télétravail occasionel (${OCCASIONAL_REMOTE_WORK_TAG})</label>
               </div>
             </div>
           </div>
@@ -2927,11 +2952,6 @@ function setAdvancedSettingsContainer () {
                 <input type="number" name="${HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_NAME}" id="${HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_ID}" placeholder="${DEFAULT_HIGHEST_TOTAL_EXTRA_MINUTES}" style="width: 40px;" value="${getSettingsValue(HIGHEST_TOTAL_EXTRA_MINUTES_KEY, DEFAULT_HIGHEST_TOTAL_EXTRA_MINUTES)}">
               </div>
             </div>
-          </div>
-
-          <div style="margin-top: 20px; margin-bottom: 20px; float: right;">
-            <button type="button" id="${RESTORE_DEFAULT_ADVANCED_SETTINGS_BUTTON}">Restaurer les valeurs par défaut</button>
-            <button type="button" id="${SAVE_ADVANCED_SETTINGS_BUTTON}">Sauvegarder</button>
           </div>
         </div>
       </div>
@@ -3212,13 +3232,7 @@ function insertHoursForAGivenDay (day, hoursDescr = null) {
   if (hoursDescr === null) {
     const now = getNow()
     const weekLabel = getWeekLabel()
-    let currentDay = now.getDay()
-
-    if (currentDay === 0) {
-      currentDay = 6
-    } else {
-      currentDay--
-    }
+    const currentDay = getCurrentDayNumber()
 
     // We are in the future. Nothing to do.
     if (weekLabel === WEEK_FUTURE || currentDay < day) {
@@ -3653,11 +3667,12 @@ function getChangelog () {
     <ul>
       <li>L'estimation pouvait être incorrecte lorsque des heures des jours suivants étaient renseignées.</li>
     </ul>
+    <li>Prise en compte de la fin de l'application des heures étendues pour le Covid.</li>
     <li>Ajout des paramètres avancés (le bouton rouge, en bas à droite de la fenêtre).</li>
     <ul>
       <li>Les paramètres avancés permettent de configurer le comportement du simulateur d'horaires. Par exemple, vous pouvez modifier les horaires de travail, le temps requis journalier, etc.</li>
       <li>Les informations sont sauvegardées en cache, dans le navigateur.</li>
-      <li>C'est (pour le moment) un mode assez expérimental. Il se peut que vous ayez besoin de recharger la page afin de prendre en compte les nouvelles valeurs.</li>
+      <li>En cas de doute, vous pouvez vider le cache en restaurant les valeurs par défaut.</li>
     </ul>
   </ul>
 `
