@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.4.3.0
+// @version      0.4.4.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -190,15 +190,22 @@ let areEndNotifications = END_NOTIFICATION_CHECKBOX_DEFAULT_VALUE
 let datesContainerHeight = 0
 const dailyWorkedTime = {}
 let currentMondayObj = getMondayTimeObjOfCurrentAdpWeek()
+let currentFridayObj = getFridayTimeObjOfCurrentAdpWeek()
 let hoursInputBaseValue = null
 let extraHoursAdded = 0
-let overtimeCompensationTime = 0
 let isAdvancedSettingsPanelVisible = false
 
 let globalCounterHours = 0
 let globalCounterMinutes = 0
 let globalCounterTime = convertToSeconds({
   hours: globalCounterHours, minutes: globalCounterMinutes
+})
+
+let overtimeCompensationTimes = {}
+let overtimeCompensationHours = 0
+let overtimeCompensationMinutes = 0
+let overtimeCompensationTime = convertToSeconds({
+  hours: overtimeCompensationHours, minutes: overtimeCompensationMinutes
 })
 
 const notificationWorker = getEndNotificationWorker()
@@ -304,6 +311,7 @@ const LEAVE_TIME_TOTAL_ID = 'leave-time-total'
 const DETAILS_ID = 'custom-details'
 const DASHBOARD_ID = 'dashboard'
 const GLOBAL_COUNTER_ID = 'global-counter'
+const OVERTIME_COMPENSATION_ID = 'overtime-compensation'
 const DAYS_OFF_HOURS_ID = 'days-off-hours'
 const NATIONAL_HOLIDAY_HOURS_ID = 'national-holiday-hours'
 const EXTRA_HOURS_BEGINNING_WEEK_ID = 'extra-hours-beginning-week'
@@ -391,6 +399,9 @@ const HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_ID = HIGHEST_TOTAL_EXTRA_MINUTES_INPUT_N
 // Messages.
 const ERROR_GLOBAL_COUNTER = 'Impossible de récupérer les heures ' +
   'supplémentaires. Elles sont donc mises à zéro.'
+
+const ERROR_OVERTIME_COMPENSATION = 'Impossible de récupérer les heures ' +
+  'de récupération variables. Elles sont donc mises à zéro.'
 
 // HTML names.
 const REFRESH_PAGE_CHECKBOX_NAME = REFRESH_PAGE_CHECKBOX_ID
@@ -770,6 +781,47 @@ function getMondayTimeOfCurrentAdpWeek () {
   )
 }
 
+// Get the Friday time object of the current ADP week as an object containing
+// the year, month and day.
+function getFridayTimeObjOfCurrentAdpWeek () {
+  const fridayTime = getFridayTimeOfCurrentAdpWeek()
+
+  return {
+    year: fridayTime.getFullYear(),
+    month: fridayTime.getMonth() + 1,
+    day: fridayTime.getDate()
+  }
+}
+
+// Get the Friday time of the current ADP week as a Date object.
+function getFridayTimeOfCurrentAdpWeek () {
+  const mondayTime = getMondayTimeOfCurrentAdpWeek()
+  let fridayTime = mondayTime
+  fridayTime = new Date(fridayTime.setDate(mondayTime.getDate() + 4))
+
+  return new Date(
+    fridayTime.getFullYear(),
+    fridayTime.getMonth(),
+    fridayTime.getDate(),
+    0,
+    0,
+    0
+  )
+}
+
+// Return the overtime compensation for a given day.
+function getOvertimeCompensation (dayNumber) {
+  if (!isOvertimeCompensation()) {
+    return 0
+  }
+
+  if (dayNumber in overtimeCompensationTimes) {
+    return overtimeCompensationTimes[dayNumber]
+  }
+
+  return 0
+}
+
 // Get the daytime of the current ADP week as a Date object.
 function getDaytimeOfCurrentAdpWeek (dayNumber) {
   const mondayTime = getMondayTimeOfCurrentAdpWeek()
@@ -828,7 +880,7 @@ function getTimeDeltaObj (day) {
   const currentDate = getNow()
   const currentDay = getCurrentDayNumber()
 
-  if (currentDay < day) {
+  if (day !== currentDay) {
     if (morningFirstTimeList.length < 2 &&
       morningLastTimeList.length < 2 &&
       morningLastTimeList.length < 2 &&
@@ -1243,10 +1295,6 @@ function getNormalizedDaytimeString (hours, minutes) {
 
 // Tell whether the tag represents a day off or not.
 function isDayOffTag (tag) {
-  if (tag === OVERTIME_COMPENSATION_TAG && isOvertimeCompensation()) {
-    return true
-  }
-
   if (tag === DAYS_OFF_TAG && areDaysOff()) {
     return true
   }
@@ -1864,13 +1912,6 @@ function addWorkedHours () {
     if (isDayOffTag(morningTag)) {
       totalDayOffSeconds += getMorningTime()
       currentTotalSeconds += getMorningTime()
-
-      if (morningTag === OVERTIME_COMPENSATION_TAG &&
-        getSettingsValue(
-          IS_OVERTIME_COMPENSATION_KEY,
-          DEFAULT_IS_OVERTIME_COMPENSATION)) {
-        overtimeCompensationTime += getMorningTime()
-      }
     } else if (isNationalHolidayTag(morningTag)) {
       totalNationalHolidaySeconds += getMorningTime()
       currentTotalSeconds += getMorningTime()
@@ -1881,19 +1922,16 @@ function addWorkedHours () {
     if (isDayOffTag(afternoonTag)) {
       totalDayOffSeconds += getAfternoonTime()
       currentTotalSeconds += getAfternoonTime()
-
-      if (afternoonTag === OVERTIME_COMPENSATION_TAG &&
-        getSettingsValue(
-          IS_OVERTIME_COMPENSATION_KEY,
-          DEFAULT_IS_OVERTIME_COMPENSATION)) {
-        overtimeCompensationTime += getAfternoonTime()
-      }
     } else if (isNationalHolidayTag(afternoonTag)) {
       totalNationalHolidaySeconds += getAfternoonTime()
       currentTotalSeconds += getAfternoonTime()
     } else {
       currentTotalSeconds += currentTimeDelta.afternoon
     }
+
+    const currentOvertimeCompensationTime = getOvertimeCompensation(day)
+    currentTotalSeconds += currentOvertimeCompensationTime
+    overtimeCompensationTime += currentOvertimeCompensationTime
 
     if (isGlobalCounterIncluded && weekLabel === WEEK_PRESENT) {
       if ((!isDayFinished(day) && day === currentDay) ||
@@ -2033,6 +2071,11 @@ function addWorkedHours () {
 
   globalCounterElement.innerHTML =
     convertToTimeDeltaString(totalSeconds - extraHoursAdded)
+
+  const overtimeCompensationElement =
+    document.getElementById(OVERTIME_COMPENSATION_ID)
+  overtimeCompensationElement.innerHTML =
+    convertToTimeDeltaString(overtimeCompensationTime)
 
   const daysOffHoursElement = document.getElementById(DAYS_OFF_HOURS_ID)
   daysOffHoursElement.innerHTML = convertToTimeDeltaString(totalDayOffSeconds)
@@ -2418,7 +2461,8 @@ function generateDetailsContainerElement () {
           ${getDashboardHeader('Heures travaillées :')}<br>
           <span style="user-select: all;">${getDashboardValue(GLOBAL_COUNTER_ID)}</span><br><br>
         </div>
-        <span style="font-size: 0.9em;"><span title="Heures comptées via les événements posés par vous ou votre manager."><span style="user-select: none;">Congés payés/Récupération : </span><span id="${DAYS_OFF_HOURS_ID}" style="user-select: all;">-</span></span><br>
+        <span style="font-size: 0.9em;"><span title="Heures de récupération comptées."><span style="user-select: none;">Récupération : </span><span id="${OVERTIME_COMPENSATION_ID}" style="user-select: all;">-</span></span><br>
+        <span style="font-size: 0.9em;"><span title="Autres heures comptées via les événements posés par vous ou votre manager."><span style="user-select: none;">Congés payés : </span><span id="${DAYS_OFF_HOURS_ID}" style="user-select: all;">-</span></span><br>
         <span title="Heures comptées via les jours fériés."><span style="user-select: none;">Jours fériés : </span><span id="${NATIONAL_HOLIDAY_HOURS_ID}" style="user-select: all;">-</span></span></span>
       </div>
       <div>
@@ -2534,7 +2578,9 @@ L'heure recommandée pour partir si vous désirez respecter (si possible) le nom
 function loadPage () {
   window.setTimeout(async () => {
     currentMondayObj = getMondayTimeObjOfCurrentAdpWeek()
+    currentFridayObj = getFridayTimeObjOfCurrentAdpWeek()
     await requestAdpExtraHours()
+    await requestAdpOvertimeComposentationTime()
     addWorkedHours()
 
     if (isRefreshPage) {
@@ -3087,6 +3133,114 @@ function requestAdpExtraHours () {
       date_cpt: dateString,
       perfin: 'N',
       'dojo.preventCache': 1574510256448
+    }
+
+    xhrHttpRequest.send(setXhrHttpRequestData(requestData))
+  })
+}
+
+// Request the ADP overtime compensation time.
+function requestAdpOvertimeComposentationTime () {
+  return new Promise(resolve => {
+    overtimeCompensationTimes = {}
+    const currentUrl = window.location.href
+    const ajaxUrl = `index.ajax.php?${currentUrl.match(TOKEN_REGEX)[0]}` +
+      '&module_ajax=evenements&action_ajax=CONSULTATION_AFFICHER'
+
+    const xhrHttpRequest = new XMLHttpRequest()
+
+    xhrHttpRequest.onload = () => {
+      if (xhrHttpRequest.status >= 200 && xhrHttpRequest.status < 300) {
+        try {
+          const rawResponse = xhrHttpRequest.response
+
+          if (rawResponse.indexOf('Aucun évenement disponible.') !== -1) {
+            resolve()
+            return
+          }
+
+          const tmpHtmlObjParent = document.createElement('div')
+          tmpHtmlObjParent.innerHTML = rawResponse
+          const tmpHtmlObjs = tmpHtmlObjParent.getElementsByTagName('tbody')[0]
+
+          for (const tmpHtmlObj of tmpHtmlObjs.children) {
+            const rawDate = tmpHtmlObj.children[2].innerHTML.trim()
+            const rawValue =
+              tmpHtmlObj.children[4].innerHTML.trim().toLowerCase()
+
+            const rawDateValues = rawDate.split('/')
+
+            const date = new Date(
+              Date.parse(
+                `${rawDateValues[1]}/${rawDateValues[0]}/${rawDateValues[2]}`
+              )
+            )
+
+            const currentDayUS = date.getDay()
+            const currentDay = currentDayUS === 0 ? 6 : currentDayUS - 1
+
+            if (rawValue === 'matin') {
+              overtimeCompensationTimes[currentDay] = getMorningTime()
+            } else if (rawValue === 'après-midi') {
+              overtimeCompensationTimes[currentDay] = getAfternoonTime()
+            } else if (rawValue === 'journée') {
+              overtimeCompensationTimes[currentDay] =
+                getMorningTime() + getAfternoonTime()
+            } else {
+              const rawNumbers = rawValue.split(':')
+              const hours = parseInt(rawNumbers[0])
+              const minutes = parseInt(rawNumbers[1])
+
+              if (isNaN(hours) || isNaN(minutes)) {
+                continue
+              }
+
+              overtimeCompensationTimes[currentDay] =
+                hours * 3600 + minutes * 60
+            }
+          }
+        } catch (error) {
+          overtimeCompensationHours = overtimeCompensationMinutes =
+            overtimeCompensationTime = 0
+          alert(ERROR_OVERTIME_COMPENSATION)
+        }
+
+        resolve()
+      }
+    }
+
+    xhrHttpRequest.onerror = () => {
+      overtimeCompensationHours = overtimeCompensationMinutes =
+        overtimeCompensationTime = 0
+      alert(ERROR_OVERTIME_COMPENSATION)
+    }
+
+    xhrHttpRequest.open('POST', ajaxUrl, true)
+
+    xhrHttpRequest.setRequestHeader(
+      'Content-Type', 'application/x-www-form-urlencoded'
+    )
+
+    xhrHttpRequest.setRequestHeader(
+      'X-Requested-With', 'XMLHttpRequest'
+    )
+
+    const fromDate =
+      `${currentMondayObj.day}/${currentMondayObj.month}/${currentMondayObj.year}`
+    const toDate =
+      `${currentFridayObj.day}/${currentFridayObj.month}/${currentFridayObj.year}`
+
+    const requestData = {
+      COLONNE_TRI: 'datdeb',
+      FLAG_TRI: 'DESC',
+      TRI: ['DATDEB DESC', 'LIB_MOTIF ASC', 'VALIDATION ASC'],
+      'STATUT[]': 3,
+      date_debut: fromDate,
+      date_fin: toDate,
+      ALL_MOTIF: '',
+      'MOTIF[]': 'RV',
+      FAMILLE: 'T',
+      'dojo.preventCache': 1644419511367
     }
 
     xhrHttpRequest.send(setXhrHttpRequestData(requestData))
@@ -3674,6 +3828,11 @@ function getChangelog () {
       <li>Les informations sont sauvegardées en cache, dans le navigateur.</li>
       <li>En cas de doute, vous pouvez vider le cache en restaurant les valeurs par défaut.</li>
     </ul>
+    <li>Support « réel » des horaires variables.</li>
+    <ul>
+      <li>Autre fois, les horaires variables ne fonctionnaient correctement qu'en demi-journées.</li>
+      <li>À présent, ADP Enhanced récupère les demandes de récupérations qui ont été acceptées.</li>
+    </ul>
   </ul>
 `
 }
@@ -3686,6 +3845,7 @@ async function initialize () {
   setSettingsContainer()
   setAdvancedSettingsContainer()
   await requestAdpExtraHours()
+  await requestAdpOvertimeComposentationTime()
   addWorkedHours()
 
   if (isRefreshPage) {
