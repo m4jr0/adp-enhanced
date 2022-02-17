@@ -287,8 +287,7 @@ const isOccasionalRemoteWork = () => {
 const now = getNow()
 const ARE_COVID_HOURS_1 = now >= new Date(2021, 6, 21, 0, 0, 0, 0) &&
   now < new Date(2021, 8, 30, 0, 0, 0, 0)
-const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0) &&
-  now < new Date(2022, 1, 18, 0, 0, 0, 0)
+const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0)
 
 // REGEX.
 const TOKEN_REGEX = /c=[a-z0-9]+/
@@ -3821,7 +3820,6 @@ function getChangelog () {
     <ul>
       <li>L'estimation pouvait être incorrecte lorsque des heures des jours suivants étaient renseignées.</li>
     </ul>
-    <li>Prise en compte de la fin de l'application des heures étendues pour le Covid.</li>
     <li>Ajout des paramètres avancés (le bouton rouge, en bas à droite de la fenêtre).</li>
     <ul>
       <li>Les paramètres avancés permettent de configurer le comportement du simulateur d'horaires. Par exemple, vous pouvez modifier les horaires de travail, le temps requis journalier, etc.</li>
