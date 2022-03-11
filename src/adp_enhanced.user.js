@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.5.0.0
+// @version      0.6.0.0
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -287,7 +287,8 @@ const isOccasionalRemoteWork = () => {
 const now = getNow()
 const ARE_COVID_HOURS_1 = now >= new Date(2021, 6, 21, 0, 0, 0, 0) &&
   now < new Date(2021, 8, 30, 0, 0, 0, 0)
-const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0)
+const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0) &&
+  now < new Date(2022, 2, 21, 0, 0, 0, 0)
 
 // REGEX.
 const TOKEN_REGEX = /c=[a-z0-9]+/
@@ -2487,7 +2488,7 @@ function generateDetailsContainerElement () {
           </div>
           <div title="Estimation du nombre d'heures en fin de semaine.
 
-l'estimateur part du principe que ${convertToTimeDeltaString(getDailyRequiredTime())} d'heures de travail journalier sont effectuées pour la semaine restante.
+L'estimateur part du principe que ${convertToTimeDeltaString(getDailyRequiredTime())} d'heures de travail journalier sont effectuées pour la semaine restante.
 
 Prend en compte les ${convertToTimeDeltaString(getHighestWeeklyExtraTime())} maximum d'heures supplémentaires par semaine, et les ${convertToTimeDeltaString(getHighestMonthlyExtraTime())} maximum d'heures supplémentaires par mois (si le nouveau mois arrive dans la semaine).">
             <span style="font-size: 0.9em; user-select: none;">Estimées :</span><br>
@@ -3816,20 +3817,9 @@ function handleWelcomeAcceptButton () {
 function getChangelog () {
   return `<h3>Changelog :</h3>
   <ul>
-    <li>Amélioration du système d'estimation des horaires lorsque des heures sont manuellement entrées par l'utilisateur.</li>
+    <li>Ajout de la fin des horaires liées au Covid (le lundi 21 mars 2022).</li>
     <ul>
-      <li>L'estimation pouvait être incorrecte lorsque des heures des jours suivants étaient renseignées.</li>
-    </ul>
-    <li>Ajout des paramètres avancés (le bouton rouge, en bas à droite de la fenêtre).</li>
-    <ul>
-      <li>Les paramètres avancés permettent de configurer le comportement du simulateur d'horaires. Par exemple, vous pouvez modifier les horaires de travail, le temps requis journalier, etc.</li>
-      <li>Les informations sont sauvegardées en cache, dans le navigateur.</li>
-      <li>En cas de doute, vous pouvez vider le cache en restaurant les valeurs par défaut.</li>
-    </ul>
-    <li>Support « réel » des horaires variables.</li>
-    <ul>
-      <li>Autre fois, les horaires variables ne fonctionnaient correctement qu'en demi-journées.</li>
-      <li>À présent, ADP Enhanced récupère les demandes de récupérations qui ont été acceptées.</li>
+      <li>Si votre cache contient des paramètres personnalisés, il faudra soit changer les horaires manuellement, soit restaurer les paramètres par défaut.</li>
     </ul>
   </ul>
 `
