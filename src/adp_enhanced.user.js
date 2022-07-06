@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.6.0.0
+// @version      0.6.0.3
 // @description  Enhance the ADP activity web page!
 // @author       m4jr0
 // @match        https://hr-services.fr.adp.com/gtaweb/gtapro/*/index.php?module=declaration&action=CMD*
@@ -68,6 +68,7 @@ const IS_UNPAID_TIME_OFF_KEY = 'is-unpaid-time-off-key'
 const ARE_NATIONAL_HOLIDAYS_KEY = 'are-national-holiday-key'
 const ARE_SICK_DAYS_KEY = 'are-sick-days-key'
 const IS_OCCASIONAL_REMOTE_WORK_KEY = 'is-occasional-remote-work-key'
+const ARE_LAY_OFFS_KEY = 'are-lay-offs-key'
 
 const LOCAL_STORAGE_TYPES = {}
 LOCAL_STORAGE_TYPES[DEBUG_IS_DEBUG_PANEL_VISIBLE_KEY] = 'boolean'
@@ -117,6 +118,7 @@ LOCAL_STORAGE_TYPES[IS_UNPAID_TIME_OFF_KEY] = 'boolean'
 LOCAL_STORAGE_TYPES[ARE_NATIONAL_HOLIDAYS_KEY] = 'boolean'
 LOCAL_STORAGE_TYPES[ARE_SICK_DAYS_KEY] = 'boolean'
 LOCAL_STORAGE_TYPES[IS_OCCASIONAL_REMOTE_WORK_KEY] = 'boolean'
+LOCAL_STORAGE_TYPES[ARE_LAY_OFFS_KEY] = 'boolean'
 
 // Version.
 const LAST_VERSION_KEY = 'last-version'
@@ -169,6 +171,7 @@ const UNPAID_TIME_OFF_TAG = 'CS'
 const NATIONAL_HOLIDAY_TAG = 'JF'
 const SICK_DAYS_TAG = 'MA'
 const OCCASIONAL_REMOTE_WORK_TAG = 'EF'
+const LAY_OFF_TAG = 'NM'
 const HOUR_ELEMENT_EMPTY_DEFAULT_VALUE = '&nbsp;'
 const HOUR_ELEMENT_EMPTY_VALUES = [
   HOUR_ELEMENT_EMPTY_DEFAULT_VALUE,
@@ -258,6 +261,7 @@ const DEFAULT_IS_UNPAID_TIME_OFF = true
 const DEFAULT_ARE_NATIONAL_HOLIDAYS = true
 const DEFAULT_ARE_SICK_DAYS = true
 const DEFAULT_IS_OCCASIONAL_REMOTE_WORK = true
+const DEFAULT_ARE_LAY_OFFS = true
 
 const isOvertimeCompensation = () => {
   return getSettingsValue(IS_OVERTIME_COMPENSATION_KEY, DEFAULT_IS_OVERTIME_COMPENSATION)
@@ -281,6 +285,10 @@ const areSickDays = () => {
 
 const isOccasionalRemoteWork = () => {
   return getSettingsValue(IS_OCCASIONAL_REMOTE_WORK_KEY, DEFAULT_IS_OCCASIONAL_REMOTE_WORK)
+}
+
+const areLayOffs = () => {
+  return getSettingsValue(ARE_LAY_OFFS_KEY, DEFAULT_ARE_LAY_OFFS)
 }
 
 // Misc.
@@ -331,6 +339,7 @@ const IS_UNPAID_TIME_OFF_CHECKBOX_ID = 'is-unpaid-time-off-checkbox'
 const ARE_NATIONAL_HOLIDAY_CHECKBOX_ID = 'are-national-holiday-checkbox'
 const ARE_SICK_DAYS_CHECKBOX_ID = 'are-sick-days-checkbox'
 const IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID = 'is-occasional-remote-work-checkbox'
+const ARE_LAY_OFFS_CHECKBOX_ID = 'are-lay-offs-checkbox'
 const MORNING_HOURS_INPUT_NAME = 'morning-hours-input'
 const MORNING_HOURS_INPUT_ID = MORNING_HOURS_INPUT_NAME
 const MORNING_MINUTES_INPUT_NAME = 'morning-minutes-input'
@@ -414,6 +423,7 @@ const UNPAID_TIME_OFF_CHECKBOX_NAME = IS_UNPAID_TIME_OFF_CHECKBOX_ID
 const NATIONAL_HOLIDAY_CHECKBOX_NAME = ARE_NATIONAL_HOLIDAY_CHECKBOX_ID
 const SICK_DAYS_CHECKBOX_NAME = ARE_SICK_DAYS_CHECKBOX_ID
 const OCCASIONAL_REMOTE_WORK_CHECKBOX_NAME = IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID
+const LAY_OFFS_CHECKBOX_NAME = ARE_LAY_OFFS_CHECKBOX_ID
 
 // CSS.
 const NEGATIVE_DELTA_COLOR = 'red'
@@ -687,7 +697,8 @@ const ADVANCED_SETTINGS_KEYS = [
   IS_UNPAID_TIME_OFF_KEY,
   ARE_NATIONAL_HOLIDAYS_KEY,
   ARE_SICK_DAYS_KEY,
-  IS_OCCASIONAL_REMOTE_WORK_KEY
+  IS_OCCASIONAL_REMOTE_WORK_KEY,
+  ARE_LAY_OFFS_KEY
 ]
 
 // Save the parameter to the local storage.
@@ -1308,6 +1319,10 @@ function isDayOffTag (tag) {
   }
 
   if (tag === OCCASIONAL_REMOTE_WORK_TAG && isOccasionalRemoteWork()) {
+    return true
+  }
+
+  if (tag === LAY_OFF_TAG && areLayOffs()) {
     return true
   }
 
@@ -2024,19 +2039,24 @@ function addWorkedHours () {
     }
   }
 
-  let estimatedExtraHoursEndWeek = getBeginningOfTheWeekExtraTime() +
+  let estimatedExtraHoursEndWeek =
+    getBeginningOfTheWeekExtraTime() - overtimeCompensationTime
+
+  // New month. So, the maximum of extra time at the beginning of the week is
+  // getHighestMonthlyExtraTime().
+  const nextMonday = sunday
+  nextMonday.setDate(nextMonday.getDate() + 1)
+
+  if (monday.getDate() > nextMonday.getDate()) {
+    estimatedExtraHoursEndWeek =
+      Math.min(estimatedExtraHoursEndWeek, getHighestMonthlyExtraTime())
+  }
+
+  estimatedExtraHoursEndWeek +=
     Math.min(currentExtraTime, getHighestWeeklyExtraTime())
 
   if (currentGlobalCounterTime < estimatedExtraHoursEndWeek) {
     currentGlobalCounterTime = estimatedExtraHoursEndWeek
-  }
-
-  estimatedExtraHoursEndWeek -= overtimeCompensationTime
-
-  // New month. So, the maximum of extra time is getHighestMonthlyExtraTime().
-  if (monday.getDate() > sunday.getDate()) {
-    estimatedExtraHoursEndWeek =
-      Math.min(estimatedExtraHoursEndWeek, getHighestMonthlyExtraTime())
   }
 
   const extraHoursEndWeekEstimatedContainer =
@@ -2886,6 +2906,11 @@ function setAdvancedSettingsContainer () {
               <div style="cursor: pointer;" title="Prise en compte du télétravail occasionel.">
                 <input style="cursor: pointer;" type="checkbox" name="${OCCASIONAL_REMOTE_WORK_CHECKBOX_NAME}" id="${IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID}" ${isOccasionalRemoteWork() ? 'checked' : ''}>
                 <label for="${IS_OCCASIONAL_REMOTE_WORK_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Du télétravail occasionel (${OCCASIONAL_REMOTE_WORK_TAG})</label>
+              </div>
+
+              <div style="cursor: pointer;" title="Prise en compte des mises à pied.">
+                <input style="cursor: pointer;" type="checkbox" name="${LAY_OFFS_CHECKBOX_NAME}" id="${ARE_LAY_OFFS_CHECKBOX_ID}" ${areLayOffs() ? 'checked' : ''}>
+                <label for="${ARE_LAY_OFFS_CHECKBOX_ID}" style="font-size: ${labelSize}; width: 400px; cursor: pointer;">Des mises à pied (${LAY_OFF_TAG})</label>
               </div>
             </div>
           </div>
@@ -3817,10 +3842,8 @@ function handleWelcomeAcceptButton () {
 function getChangelog () {
   return `<h3>Changelog :</h3>
   <ul>
-    <li>Ajout de la fin des horaires liées au Covid (le lundi 21 mars 2022).</li>
-    <ul>
-      <li>Si votre cache contient des paramètres personnalisés, il faudra soit changer les horaires manuellement, soit restaurer les paramètres par défaut.</li>
-    </ul>
+    <li>Correction de l'estimation des heures supplémentaires en fin de mois.</li>
+    <li>Ajout du support du tag <b>NM</b> (mises à pied).</li>
   </ul>
 `
 }
