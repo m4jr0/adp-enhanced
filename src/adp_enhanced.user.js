@@ -299,7 +299,7 @@ const ARE_COVID_HOURS_2 = now >= new Date(2021, 11, 6, 0, 0, 0, 0) &&
   now < new Date(2022, 2, 21, 0, 0, 0, 0)
 
 // REGEX.
-const TOKEN_REGEX = /c=[a-z0-9]+/
+const TOKEN_REGEX = /c=[a-zA-Z0-9_-]+/
 
 // local storage values.
 const REFRESH_PAGE_CHECKBOX_KEY = 'refresh-page-checkbox-key'
@@ -3842,6 +3842,7 @@ function handleWelcomeAcceptButton () {
 function getChangelog () {
   return `<h3>Changelog :</h3>
   <ul>
+    <li>Correction du script qui ne marchait plus du tout. 🙈</li>
     <li>Correction de l'estimation des heures supplémentaires en fin de mois.</li>
     <li>Ajout du support du tag <b>NM</b> (mises à pied).</li>
   </ul>
