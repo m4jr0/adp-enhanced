@@ -33,5 +33,9 @@ function waitForElement (querySelector, timeout) {
 }
 
 function getLoadingText () {
-  return '<div class="time-loading-animation">...</div>'
+  return '<span class="time-loading-animation">...</span>'
+}
+
+function getNoTimePairEl () {
+  return '<div class="time-pair-no-entries">-</div>'
 }

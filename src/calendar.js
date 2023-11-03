@@ -1,107 +1,472 @@
+function getHeaderHtml () {
+  return `<div class="row timesheet-totals">
+  <div class="col-sm-3 col-xs-12 text-center">
+    <div>
+      <div ng-switch-when="not-approved" class="ng-scope">
+        <timecard-total-view class="row ng-isolate-scope" type="totalhours" color="neutral-dark" size="xl"
+          current="timecardCalendarCtrl.currentTimesheet"
+          use-fractional-format="timecardCalendarCtrl.useFractionFormat">
+          <div class="timesheet-total">
+            <div class="timecard-totals-label ng-binding">Temps total</div>
+            <adp-poker-chip id="timecard-total" class="ng-isolate-scope"><adp-pokerchip-container
+                class="xl neutral-dark-bg render-chip" data-chip-progress="100">
+                <adp-pokerchip-inset class="white-bg"><adp-pokerchip-percentage
+                    class="neutral-dark description"><adp-pokerchip-data-container>
+                      <adp-pokerchip-progression class="ng-binding ng-scope"
+                        id="total-time">-</adp-pokerchip-progression><adp-pokerchip-subtext class="ng-binding"
+                        style="font-size: 14px">h
+                        min</adp-pokerchip-subtext></adp-pokerchip-data-container></adp-pokerchip-percentage></adp-pokerchip-inset>
+                <div id="adp-pokerchip-mask-container">
+                  <adp-pokerchip-mask class="full ng-scope"><adp-pokerchip-fill
+                      class="neutral-dark-bg"></adp-pokerchip-fill></adp-pokerchip-mask>
+                  <adp-pokerchip-mask class="half"><adp-pokerchip-fill
+                      class="neutral-dark-bg"></adp-pokerchip-fill><adp-pokerchip-fill
+                      class="fix"></adp-pokerchip-fill></adp-pokerchip-mask>
+                </div>
+              </adp-pokerchip-container>
+            </adp-poker-chip>
+          </div>
+        </timecard-total-view>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-9 col-xs-12 no-padding">
+    <div class="col-sm-5 hidden-xs">
+      <weekly-view weeks="timecardCalendarCtrl.calendarView.model.weeks" class="ng-isolate-scope">
+        <div class="timecard-week-totals">
+          <div class="timecard-totals-label ng-binding">
+            Résumé de la semaine
+          </div>
+          <div class="row timecard-week-total ng-scope">
+            <div class="timecard-week-total-header ng-binding">
+              Quota d'heures variables
+            </div>
+            <div>
+              <span class="week-date-range ng-binding">Début</span>
+              <span class="pull-right text-right week-total ng-binding" id="beginning-extra-time">-</span>
+            </div>
+            <div>
+              <span class="week-date-range ng-binding">Fin (estimation)</span>
+              <span class="pull-right text-right week-total ng-binding" id="ending-extra-time">-</span>
+            </div>
+          </div>
+        </div>
+      </weekly-view>
+    </div>
+  </div>
+</div>
+  `
+}
+
+function getViewHtml () {
+  return `<div class="timecard-calendar-view ng-pristine ng-valid" id="timecard-calendar">
+  <div>
+    <div class="ng-scope">
+      <div class="row time-calendar timecard-calendar monospace-numbers">
+        <div class="time-calendar-table time-calendar-week ng-scope">
+          <div class="time-calendar-table-row ng-scope">
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Lun</div>
+            </div>
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Mar</div>
+            </div>
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Mer</div>
+            </div>
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Jeu</div>
+            </div>
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Ven</div>
+            </div>
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Sam</div>
+            </div>
+            <div class="time-calendar-table-cell ng-scope">
+              <div class="cell-day-header ng-binding">Dim</div>
+            </div>
+          </div>
+        </div>
+        <div class="time-calendar-week ng-scope selected-week last-week">
+          <div class="time-calendar-table">
+            <div class="time-calendar-table-row">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="monday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="monday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="monday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="tuesday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="tuesday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="tuesday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="wednesday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="wednesday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="wednesday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="thursday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="thursday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="thursday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="friday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="friday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="friday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="saturday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="saturday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="saturday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+                <div class="cell-content timecard-day-content view-only cell-content-expanded">
+                  <div>
+                    <div ng-switch-when="content" class="ng-scope">
+                      <day-summary-content>
+                        <div class="timecard-day-summary">
+                          <div class="cell-date ng-binding" id="sunday-month-day">-</div>
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                            <div id="sunday-time">-</div>
+                          </div>
+                        </div>
+                      </day-summary-content>
+                    </div>
+                  </div>
+                  <div class="row cell-content-details ng-scope">
+                    <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
+                      <div class="ng-isolate-scope day-details" id="sunday-details">
+                      </div>
+                  </div>
+
+                  </timecard-calendar-view-see-details>
+                  <timecard-day-schedule class="ng-scope ng-isolate-scope">
+                    <div>
+                    </div>
+                  </timecard-day-schedule>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  `
+}
+
 async function setup () {
   getStartAndEndDates()
   await getVersionData()
   await getAssociateOid()
   await getExtraHours()
 
-  const calendar = document.querySelector(
-    '.time-calendar > :nth-child(2) > :first-child > :first-child'
-  )
+  await getCalendarTimes().then(calendarEntries => {
+    setCalendarTimes(calendarEntries)
+  })
 
-  for (let i = 0; i < calendar.children.length; ++i) {
-    const dayElement = calendar.children[i]
+  await getCalendarEvents().then(calendarEvents => {
+    setCalendarEvents(calendarEvents)
+  })
+
+  const headerEl = document.querySelector('.row .timesheet-totals')
+
+  if (headerEl === null) {
+    return
+  }
+
+  const viewEl = document.querySelector('esi-timecard-calendar-view')
+
+  if (viewEl === null) {
+    return
+  }
+
+  headerEl.innerHTML = getHeaderHtml()
+  viewEl.innerHTML = getViewHtml()
+
+  for (let i = 0; i < DateUtils.WEEKDAY_COUNT; ++i) {
     const dayLabel = getDayFromIndex(i)
-    dayElement[dayLabel] = dayElement
-    const clockedValueEls = dayElement.querySelectorAll(
-      '[ng-switch-when="clockEntry"] > :nth-child(1)'
+    const monthDayEl = document.querySelector(`#${dayLabel}-month-day`)
+    monthDayEl.innerHTML = AdpData.getDayDate(dayLabel).getDate()
+    const timePairsEl = document.querySelector(`#${dayLabel}-details`)
+    const dayData = AdpData.days[dayLabel]
+
+    timePairsEl.innerHTML = '<p class="day-details-title">Pointage</p>'
+
+    if (dayData.timePairs.length > 0) {
+      dayData.timePairs.forEach((timePair, index) => {
+        timePairsEl.innerHTML += timePair.getLabel(true)
+      })
+    } else {
+      timePairsEl.innerHTML += getNoTimePairEl()
+    }
+
+    timePairsEl.innerHTML += '<hr class="time-separator">'
+    timePairsEl.innerHTML += '<p class="day-details-title">Événements</p>'
+
+    if (dayData.specialTimePairs.length > 0) {
+      dayData.specialTimePairs.forEach((timePair, index) => {
+        timePairsEl.innerHTML += timePair.getLabel(true)
+      })
+    } else {
+      timePairsEl.innerHTML += getNoTimePairEl()
+    }
+
+    let beginningExtraTimesEl = document.querySelector('#beginning-extra-time')
+    beginningExtraTimesEl.innerHTML = getTimeDeltaString(
+      AdpData.beginningExtraTime
     )
 
-    const dayData = (AdpData.days[dayLabel] = new DayData())
-    let pair = new TimePair()
+    let endingExtraTimesEl = document.querySelector('#ending-extra-time')
+    endingExtraTimesEl.parentElement.style.display = 'none'
+  }
 
-    Array.from(clockedValueEls).forEach((clockedValueEl, index) => {
+  startRefresh()
+}
+
+function setCalendarTimes (calendarEntries) {
+  for (const entry of calendarEntries) {
+    const date = new Date(entry.entryDate)
+    const dayData = (AdpData.days[getDayLabelFromDate(date)] = new AdpDayData())
+    dayData.date = new Date(date)
+    dayData.date.setHours(0)
+    dayData.date.setMinutes(0)
+    dayData.date.setSeconds(0)
+
+    if (entry.entryDetail === undefined) {
+      continue
+    }
+
+    const rawTimePairs = entry.entryDetail[0].timePairSummary
+    let pair = new TimePair()
+    pair.description = 'Pointage'
+
+    for (const rawTimePair of rawTimePairs) {
+      const pairDate = new Date(rawTimePair.timePeriod.startDateTime)
+
       if (pair.isFilled()) {
         dayData.timePairs.push(pair)
         pair = new TimePair()
+        pair.description = 'Pointage'
       }
 
-      pair.push(parseAdpTime(clockedValueEl.innerHTML))
-    })
+      pair.push(pairDate)
+    }
 
     if (!pair.isEmpty()) {
       dayData.timePairs.push(pair)
     }
 
-    const timePairsEl = dayElement.querySelector(
-      'timecard-calendar-view-see-details'
+    const dayPeriodSummaries = entry.entryDetail[0].dayPeriodSummary
+
+    if (dayPeriodSummaries === undefined) {
+      continue
+    }
+
+    for (const dayPeriodSummary of dayPeriodSummaries) {
+      try {
+        const codeName = dayPeriodSummary.codeName
+
+        if (!isSpecificTimePair(codeName)) {
+          continue
+        }
+
+        const dayPeriodValue = dayPeriodSummary.dayPeriodValue
+        const isMorning = dayPeriodValue === 'M' || dayPeriodValue === 'J'
+        const isAfternoon = dayPeriodValue === 'A' || dayPeriodValue === 'J'
+
+        if (isMorning) {
+          dayData.specialTimePairs.push(
+            getRecommendedMorningTimePair(
+              dayData.date,
+              getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+            )
+          )
+        }
+
+        if (isAfternoon) {
+          dayData.specialTimePairs.push(
+            getRecommendedAfternoonTimePair(
+              dayData.date,
+              getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+            )
+          )
+        }
+      } catch (error) {
+        // Ignore error for this specific case (we are not sure if all cases are handled correctly).
+        log(
+          `Error while trying to parse specific time pair: ${error}`,
+          Log.Error
+        )
+      }
+    }
+  }
+}
+
+function setCalendarEvents (calendarEvents) {
+  for (const calendarEvent of calendarEvents) {
+    const subject = calendarEvent.subject
+
+    if (subject !== 'Férié') {
+      continue
+    }
+
+    const startTime = calendarEvent.timePeriod.startDateTime
+    const date = new Date(startTime)
+    const dayLabel = getDayLabelFromDate(date)
+    const dayData = AdpData.days[dayLabel]
+
+    dayData.specialTimePairs.push(
+      getRecommendedMorningTimePair(dayData.date, 'Jour férié (matin)')
     )
 
-    if (timePairsEl !== null) {
-      timePairsEl.innerHTML = ''
-
-      dayData.timePairs.forEach((timePair, index) => {
-        timePairsEl.innerHTML += `<div class="time-pair-entry"><span class="time-bullet">·</span> ${timePair.getLabel(
-          true
-        )}</div>`
-      })
-
-      timePairsEl.innerHTML += '<hr class="time-separator">'
-    }
-
-    let extraTimesEl = document.querySelector('#beginning-extra-time')
-
-    if (extraTimesEl === null) {
-      const summaryContainerEl = document.querySelector('.timecard-week-totals')
-        .parentElement.parentElement.parentElement
-      const extraTimeContainerEl = document.createElement('weekly-view')
-      extraTimeContainerEl.className = 'ng-isolate-scope'
-
-      const extraTimeColumnEl = document.createElement('div')
-      extraTimeColumnEl.className = 'col-sm-5 hidden-xs'
-
-      const extraTimeOtherContainerEl = document.createElement('div')
-      extraTimeOtherContainerEl.className = 'timecard-week-totals'
-
-      summaryContainerEl.appendChild(extraTimeOtherContainerEl)
-      extraTimeOtherContainerEl.appendChild(extraTimeColumnEl)
-      extraTimeColumnEl.appendChild(extraTimeContainerEl)
-
-      const extraTimeTitleEl = document.createElement('div')
-      extraTimeTitleEl.className = 'timecard-totals-label ng-binding'
-      extraTimeTitleEl.innerHTML = 'Résumé de la semaine'
-
-      extraTimeContainerEl.appendChild(extraTimeTitleEl)
-
-      extraTimesEl = document.createElement('div')
-      extraTimesEl.className = 'row timecard-week-totals ng-scope'
-      extraTimesEl.id = 'beginning-extra-time'
-
-      extraTimeContainerEl.appendChild(extraTimesEl)
-    }
-
-    extraTimesEl.innerHTML = `
-      <div class="timecard-week-total-header ng-binding">
-        Heures supplémentaires
-      </div>
-      <span class="week-date-range ng-binding">Début de semaine</span>
-      <span class="pull-right text-right week-total ng-binding">${getTimeDeltaString(
-        AdpData.beginningExtraTime
-      )}</span>
-      <br>
-      <span class="week-date-range ng-binding">Fin de semaine (estimation)</span>
-      <span class="pull-right text-right week-total ng-binding">${'WIP'}</span>
-    `
+    dayData.specialTimePairs.push(
+      getRecommendedAfternoonTimePair(dayData.date, 'Jour férié (après-midi)')
+    )
   }
-
-  startRefresh()
 }
 
 function display () {
   AdpData.refresh()
   const isWorking = AdpData.isWorking()
 
-  const progressionEl = document.querySelector('adp-pokerchip-progression')
-  progressionEl.id = 'adp-pokerchip-progression'
+  const progressionEl = document.querySelector('#total-time')
   progressionEl.innerHTML = getTimeDeltaString(AdpData.totalTime)
 
   const progressionSubTextEl = document.querySelector('adp-pokerchip-subtext')
@@ -111,18 +476,6 @@ function display () {
   let progressionMaskContainerEl = document.querySelector(
     '#adp-pokerchip-mask-container'
   )
-
-  if (progressionMaskContainerEl === null) {
-    progressionMaskContainerEl = document.createElement('div')
-    progressionMaskContainerEl.id = 'adp-pokerchip-mask-container'
-    progressionMaskEl.parentElement.appendChild(progressionMaskContainerEl)
-
-    const progressionMaskEls = document.querySelectorAll('adp-pokerchip-mask')
-
-    for (const el of progressionMaskEls) {
-      progressionMaskContainerEl.appendChild(el)
-    }
-  }
 
   if (isWorking) {
     progressionEl.classList.add('working-global-time')
@@ -146,39 +499,36 @@ function display () {
 
   const currentDayIndex = getDayIndexFromDate(getNow())
 
-  for (let dayIndex = 1; dayIndex <= DateUtils.WORKDAY_COUNT; ++dayIndex) {
-    if (dayIndex - 1 > currentDayIndex) {
+  for (let dayIndex = 0; dayIndex < DateUtils.WORKDAY_COUNT; ++dayIndex) {
+    if (dayIndex > currentDayIndex) {
       break
     }
 
-    const dayKey = getDayFromIndex(dayIndex - 1)
-
-    if (!AdpData.isDay(dayKey)) {
-      continue
-    }
-
-    const hoursEl = document.querySelector(
-      `.time-calendar > :nth-child(2) > :first-child > :first-child > :nth-child(${dayIndex}) > :first-child > :first-child > :first-child > :first-child > :first-child > :nth-child(2)`
-    )
-
-    if (hoursEl === null || !hoursEl.hasChildNodes()) {
-      continue
-    }
-
-    const dayTime = AdpData.getDayTime(getDayFromIndex(dayIndex - 1))
-    const node = hoursEl.childNodes[0]
+    const dayLabel = getDayFromIndex(dayIndex)
+    const dayTimeEl = document.querySelector(`#${dayLabel}-time`)
+    const dayTime = AdpData.getDayTime(dayLabel)
     const timeDeltaString = getTimeDeltaString(dayTime)
+    dayTimeEl.innerHTML = timeDeltaString
 
-    if (!isWorking || dayIndex - 1 !== currentDayIndex) {
-      node.textContent = timeDeltaString
+    if (!isWorking || dayIndex !== currentDayIndex) {
+      dayTimeEl.classList.remove('working-day-time')
+    } else {
+      dayTimeEl.classList.add('working-day-time')
+    }
+  }
+
+  const activeTimePairEls = document.querySelectorAll('.working-time-delta')
+
+  for (const activeTimePairEl of activeTimePairEls) {
+    const timePair = TimePair.get(activeTimePairEl.id)
+
+    if (timePair === null) {
       continue
     }
 
-    node.textContent = ''
-    const dayEl = document.createElement('span')
-    dayEl.textContent = timeDeltaString
-    dayEl.className = 'working-day-time'
-    hoursEl.insertBefore(dayEl, hoursEl.firstChild)
+    activeTimePairEl.innerHTML = `[${getTimeDeltaLabel(
+      timePair.getDeltaInSeconds()
+    )}]`
   }
 }
 

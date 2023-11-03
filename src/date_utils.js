@@ -4,7 +4,7 @@ class DateUtils {
   static MONDAY_LABEL = 'monday'
   static TUESDAY_LABEL = 'tuesday'
   static WEDNESDAY_LABEL = 'wednesday'
-  static THIRSDAY_LABEL = 'thirsday'
+  static THURSDAY_LABEL = 'thursday'
   static FRIDAY_LABEL = 'friday'
   static SATURDAY_LABEL = 'saturday'
   static SUNDAY_LABEL = 'sunday'
@@ -12,8 +12,26 @@ class DateUtils {
 }
 
 class TimePair {
+  static ID_COUNTER = -1
+  static pairs_ = {}
+
+  static get (id) {
+    if (!TimePair.pairs_.hasOwnProperty(id)) {
+      return null
+    }
+
+    return TimePair.pairs_[id]
+  }
+
+  id = null
   from = null
   to = null
+  description = null
+
+  constructor () {
+    this.id = `${this.constructor.name}_${++TimePair.ID_COUNTER}`
+    TimePair.pairs_[this.id] = this
+  }
 
   isEmpty () {
     return this.from === null && this.to === null
@@ -37,19 +55,41 @@ class TimePair {
     }
   }
 
-  getLabel (isCss) {
+  getLabel (isHtml) {
     if (this.from === null) {
-      return getLoadingText()
+      return '???'
     }
 
-    const arrow = isCss ? ' <span class="time-arrow">→</span> ' : ' → '
-
+    const arrow = isHtml ? ' <span class="time-arrow">→</span> ' : ' → '
     let label = `${getHoursMinutesLabel(this.from)} ${arrow} `
+    const isWorking = this.to === null
 
-    if (this.to === null) {
-      label += getLoadingText()
+    if (isWorking) {
+      label += isHtml ? `${getLoadingText()}` : '...'
     } else {
       label += getHoursMinutesLabel(this.to)
+    }
+
+    if (isHtml) {
+      label = `<div class="time-pair-element"><span class="time-bullet">·</span> ${label}</div>`
+    }
+
+    const timeDeltaLable = getTimeDeltaLabel(this.getDeltaInSeconds())
+
+    let dataTooltip = !this.description
+      ? 'Paire non reconnue'
+      : this.description
+    dataTooltip = `data-tooltip="${dataTooltip}"`
+
+    if (isHtml) {
+      const additionalClasses = isWorking ? 'working-time-delta' : ''
+      label += `<div class="time-delta"><span id="${this.id}" class="${additionalClasses}">[${timeDeltaLable}]</span><span class="time-pair-entry-help" ${dataTooltip}><i class="time-pair-entry-help-icon fa fa-question-circle"></i></span></div>`
+    } else {
+      label += ` ${timeDeltaLable}`
+    }
+
+    if (isHtml) {
+      label = `<div class="time-pair-entry">${label}</div>`
     }
 
     return label
@@ -58,11 +98,6 @@ class TimePair {
   getDeltaInSeconds () {
     if (this.from === null) {
       assert(this.to === null, `${this.constructor.name} is malformed!`)
-      return 0
-    }
-
-    if (this.to === null) {
-      // >:3
       return 0
     }
 
@@ -246,7 +281,7 @@ function getDayFromIndex (index) {
     case 2:
       return DateUtils.WEDNESDAY_LABEL
     case 3:
-      return DateUtils.THIRSDAY_LABEL
+      return DateUtils.THURSDAY_LABEL
     case 4:
       return DateUtils.FRIDAY_LABEL
     case 5:
@@ -266,7 +301,7 @@ function getIndexFromDay (day) {
       return 1
     case DateUtils.WEDNESDAY_LABEL:
       return 2
-    case DateUtils.THIRSDAY_LABEL:
+    case DateUtils.THURSDAY_LABEL:
       return 3
     case DateUtils.FRIDAY_LABEL:
       return 4
@@ -279,6 +314,10 @@ function getIndexFromDay (day) {
   return -1
 }
 
+function isValidDayIndex (dayIndex) {
+  return dayIndex >= 0 && dayIndex < DateUtils.WEEKDAY_COUNT
+}
+
 function getDayIndexFromDate (date) {
   const day = date.getDay()
 
@@ -287,6 +326,41 @@ function getDayIndexFromDate (date) {
   }
 
   return day - 1
+}
+
+function getRecommendedMorningTimePair (anchorDate, description = null) {
+  const beginningDate = new Date(
+    anchorDate.getTime() +
+      DateConsts.getRecommendedBeginningWorkingTime() * 1000
+  )
+  const endDate = new Date(
+    anchorDate.getTime() + DateConsts.getRecommendedBeginningLunchTime() * 1000
+  )
+
+  const pair = new TimePair()
+  pair.push(beginningDate)
+  pair.push(endDate)
+  pair.description = description
+  return pair
+}
+
+function getRecommendedAfternoonTimePair (anchorDate, description = null) {
+  const beginningDate = new Date(
+    anchorDate.getTime() + DateConsts.getRecommendedEndingLunchTime() * 1000
+  )
+  const endDate = new Date(
+    anchorDate.getTime() + DateConsts.getRecommendedEndingWorkingTime() * 1000
+  )
+
+  const pair = new TimePair()
+  pair.push(beginningDate)
+  pair.push(endDate)
+  pair.description = description
+  return pair
+}
+
+function getDayLabelFromDate (date) {
+  return getDayFromIndex(getDayIndexFromDate(date))
 }
 
 function parseAdpTime (adpTime) {

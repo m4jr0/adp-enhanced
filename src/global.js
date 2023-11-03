@@ -4,6 +4,13 @@ class Global {
   static IS_DEBUG = true
 }
 
+class AdpDayData {
+  date = null
+  totalTime = 0
+  timePairs = []
+  specialTimePairs = []
+}
+
 class AdpData {
   static startDate = null
   static endDate = null
@@ -14,6 +21,19 @@ class AdpData {
   static days = {}
   static totalTime = 0
   static beginningExtraTime = 0
+
+  static getDayDate (key) {
+    const dayIndex = getIndexFromDay(key)
+
+    assert(
+      isValidDayIndex(dayIndex),
+      `Invalid day index ${dayIndex} from key ${key}!`
+    )
+
+    const date = new Date(AdpData.startDate)
+    date.setDate(date.getDate() + dayIndex)
+    return date
+  }
 
   static isWorking () {
     const now = getNow()
@@ -35,20 +55,32 @@ class AdpData {
 
   static refreshDayData (key) {
     const dayData = this.days[key]
-
-    let isMorningBreak = false
-    let isAfternoonBreak = false
     let morningEndTime = null
     let morningEndThreshold = null
+
+    var date = new Date(dayData.date)
+
+    date.setSeconds(
+      date.getSeconds() + DateConsts.getRecommendedBeginningLunchTime()
+    )
+
+    const now = getNow()
+    const dayBeginningDate = new Date(now)
+    dayBeginningDate.setHours(0)
+    dayBeginningDate.setMinutes(0)
+    dayBeginningDate.setSeconds(0)
+    dayBeginningDate.setMilliseconds(0)
+
+    const isAfternoon =
+      dayData.date < dayBeginningDate ||
+      (dayData.date.getTime() === dayBeginningDate.getTime() && now > date)
+
     dayData.totalTime = 0
 
     dayData.timePairs.forEach((timePair, index) => {
       const normalizedPair = timePair.getNormalizedCopy()
-      const isAfternoonThreshold =
-        normalizedPair.getFromTimeInSeconds() >
-        DateConsts.getRecommendedBeginningLunchTime()
 
-      if (!isAfternoonThreshold) {
+      if (!isAfternoon) {
         morningEndTime = normalizedPair.to
       } else {
         if (morningEndThreshold === null) {
@@ -87,35 +119,30 @@ class AdpData {
       }
 
       let delta = normalizedPair.getDeltaInSeconds()
-
-      if (!isMorningBreak) {
-        delta -= DateConsts.getMorningBreakTime()
-        isMorningBreak = true
-      } else if (!isAfternoonBreak && isAfternoonThreshold) {
-        delta -= DateConsts.getAfternoonBreakTime()
-        isAfternoonBreak = true
-      }
-
       dayData.totalTime += Math.max(delta, 0)
     })
-  }
 
-  static isDay (key) {
-    return this.days.hasOwnProperty(key)
+    dayData.totalTime -= DateConsts.getMorningBreakTime()
+
+    if (isAfternoon) {
+      dayData.totalTime -= DateConsts.getAfternoonBreakTime()
+    }
+
+    dayData.specialTimePairs.forEach((timePair, index) => {
+      dayData.totalTime += timePair.getDeltaInSeconds()
+    })
+
+    dayData.totalTime = Math.max(0, dayData.totalTime)
   }
 
   static isWorkingDay (key) {
-    return this.isDay(key) && this.days[key].timePairs.length > 0
+    return this.days[key].timePairs.length > 0
   }
 
   static refresh () {
     AdpData.totalTime = 0
 
     for (const key in this.days) {
-      if (!this.isDay(key)) {
-        continue
-      }
-
       this.refreshDayData(key)
       const dayData = this.days[key]
       AdpData.totalTime += dayData.totalTime

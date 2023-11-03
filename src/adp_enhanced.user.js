@@ -34,7 +34,7 @@ async function initialize () {
     checkIfLoadIsNeeded()
   })
 
-  console.log(
+  log(
     `Hooray! ${Global.ADP_APP_NAME} is back! Let's dance! 💃 Version is ${Global.ADP_ENHANCED_VERSION}.`
   )
 
@@ -45,6 +45,11 @@ async function initialize () {
   window.addEventListener(
     'load',
     () => {
+      log(
+        `Bootstrapping ${Global.ADP_APP_NAME} v${Global.ADP_ENHANCED_VERSION}...`,
+        Log.Info
+      )
+
       initialize() // Let's go!
     },
     false
