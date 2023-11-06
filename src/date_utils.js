@@ -115,7 +115,7 @@ class TimePair {
       SettingsKeys.TIME_MINIMUM_BEGINNING_WORKING_MINUTES
     )
 
-    if (this.from.getHours() < hours && this.from.getMinutes() < minutes) {
+    if (this.from.getHours() <= hours && this.from.getMinutes() < minutes) {
       this.from.setHours(hours)
       this.from.setMinutes(minutes)
     }
@@ -127,7 +127,7 @@ class TimePair {
       this.to = getNow()
     }
 
-    if (this.to.getHours() > hours && this.to.getMinutes() > minutes) {
+    if (this.to.getHours() >= hours && this.to.getMinutes() > minutes) {
       this.to.setHours(hours)
       this.to.setMinutes(minutes)
     }

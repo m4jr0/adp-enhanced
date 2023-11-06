@@ -3,12 +3,13 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.9.1
+// @version      0.9.2
 // @description  Enhance ADP
 // @author       m4jr0
 // @match        https://mon.adp.com/redbox/*/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=adp.com
 // @grant        none
+// @run-at       document-end
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/global.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/utils.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/date_utils.js
@@ -18,6 +19,7 @@
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/css.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/calendar.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/loader.js
+// @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/intro.js
 // ==/UserScript==
 
 /* global GM_info */

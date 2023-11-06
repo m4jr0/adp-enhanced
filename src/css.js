@@ -36,13 +36,13 @@ const CSS = `
   cursor: var(--sub-text-cursor);
 }
 
-#adp-toggle-button {
+#adp-enhanced-toggle-button {
   bottom: 2px;
   margin-right: 20px;
   position: relative;
 }
 
-#adp-toggle-button-logo {
+#adp-enhanced-toggle-button-logo {
   vertical-align: -0.6em;
 }
 
@@ -50,7 +50,7 @@ const CSS = `
   font-size: 30px !important;
 }
 
-#adp-toggle-button a {
+#adp-enhanced-toggle-button a {
   color: var(--global-emphasis);
 }
 
