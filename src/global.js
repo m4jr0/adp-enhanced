@@ -79,8 +79,11 @@ class AdpData {
 
     dayData.timePairs.forEach((timePair, index) => {
       const normalizedPair = timePair.getNormalizedCopy()
+      const isAfternoonThreshold =
+        normalizedPair.getFromTimeInSeconds() >
+        DateConsts.getRecommendedBeginningLunchTime()
 
-      if (!isAfternoon) {
+      if (!isAfternoonThreshold) {
         morningEndTime = normalizedPair.to
       } else {
         if (morningEndThreshold === null) {
