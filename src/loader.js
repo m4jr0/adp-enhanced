@@ -1,6 +1,6 @@
 class Loader {
   static SCRIPT_TIMEOUT_IN_MILLISECONDS = 20000
-  static SCRIPT_LOAD_SLEEP_IN_MILLISECONDS = 500
+  static SCRIPT_LOAD_SLEEP_IN_MILLISECONDS = 250
 
   static MATCH_URL =
     GM_info.script.matches.length > 0 ? GM_info.script.matches[0] : ''

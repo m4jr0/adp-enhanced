@@ -128,8 +128,7 @@ class TimePair {
     }
 
     if (this.to.getHours() >= hours && this.to.getMinutes() > minutes) {
-      this.to.setHours(hours)
-      this.to.setMinutes(minutes)
+      this.to.setHours(hours, minutes)
     }
   }
 
@@ -263,10 +262,6 @@ function getTimeDeltaString (
     .toString()
     .padStart(2, '0')
 
-  if (hours <= 0) {
-    return `${sign}${minutes}${minutesSeparator}`
-  }
-
   return `${sign}${hours}${hoursSeparator}${minutes}${minutesSeparator}`
 }
 
@@ -312,6 +307,15 @@ function getIndexFromDay (day) {
   }
 
   return -1
+}
+
+function getMondayOfCurrentWeek () {
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(today.setDate(today.getDate() + difference))
+  monday.setHours(0, 0, 0, 0)
+  return monday
 }
 
 function isValidDayIndex (dayIndex) {

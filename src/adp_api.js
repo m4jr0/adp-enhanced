@@ -47,7 +47,12 @@ function getVersionData () {
 
 function getExtraHours () {
   return new Promise((resolve, reject) => {
-    const ajaxUrl = `${window.location.origin}/time/v3/workers/${AdpData.associateOid}/time-off-balances`
+    const ajaxUrl = `${window.location.origin}/time/v3/workers/${
+      AdpData.associateOid
+    }/time-off-balances?$filter=balanceAsOfDate%20eq%20%27${formatDateToYYYYMMDD(
+      AdpData.startDate
+    )}%27`
+
     const xhrHttpRequest = new XMLHttpRequest()
 
     xhrHttpRequest.onload = () => {
@@ -99,12 +104,7 @@ function getExtraHours () {
 
     xhrHttpRequest.setRequestHeader('Accept-Language', 'fr-FR')
     xhrHttpRequest.setRequestHeader('Consumerappoid', `RDBX:${AdpData.appOid}`)
-
-    const requestData = {
-      $filter: `balanceAsOfDate eq '${formatDateToYYYYMMDD(AdpData.startDate)}'`
-    }
-
-    xhrHttpRequest.send(setXhrHttpRequestData(requestData))
+    xhrHttpRequest.send()
   })
 }
 

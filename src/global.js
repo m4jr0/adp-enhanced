@@ -22,6 +22,14 @@ class AdpData {
   static totalTime = 0
   static beginningExtraTime = 0
 
+  static isFutureWeek () {
+    if (!this.startDate) {
+      return false
+    }
+
+    return getMondayOfCurrentWeek() < this.startDate
+  }
+
   static getDayDate (key) {
     const dayIndex = getIndexFromDay(key)
 
@@ -66,10 +74,7 @@ class AdpData {
 
     const now = getNow()
     const dayBeginningDate = new Date(now)
-    dayBeginningDate.setHours(0)
-    dayBeginningDate.setMinutes(0)
-    dayBeginningDate.setSeconds(0)
-    dayBeginningDate.setMilliseconds(0)
+    dayBeginningDate.setHours(0, 0, 0, 0)
 
     const isAfternoon =
       dayData.date < dayBeginningDate ||

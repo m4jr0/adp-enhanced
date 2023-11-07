@@ -291,7 +291,48 @@ function getViewHtml () {
   `
 }
 
+function listenForPeriodPicker () {
+  let previousValue = document.querySelector('.periods-navigator').innerHTML
+
+  function checkForChanges () {
+    const periodNavigator = document.querySelector('.periods-navigator')
+    const currentValue = periodNavigator.innerHTML
+
+    if (previousValue !== currentValue) {
+      previousValue = currentValue
+      setup()
+    }
+  }
+
+  setInterval(checkForChanges, Loader.SCRIPT_LOAD_SLEEP_IN_MILLISECONDS)
+}
+
+function listenForRefreshButton () {
+  const element = document.querySelector(
+    '[ng-click="timecardCalendarCtrl.reload()"]'
+  )
+
+  element.addEventListener('click', event => {
+    setup()
+  })
+}
+
+const listenForRefreshed = (function () {
+  let isLoaded = false
+
+  return function () {
+    if (isLoaded) {
+      return
+    }
+
+    listenForPeriodPicker()
+    listenForRefreshButton()
+    isLoaded = true
+  }
+})()
+
 async function setup () {
+  listenForRefreshed()
   getStartAndEndDates()
   await getVersionData()
   await getAssociateOid()
@@ -365,32 +406,33 @@ function setCalendarTimes (calendarEntries) {
     const date = new Date(entry.entryDate)
     const dayData = (AdpData.days[getDayLabelFromDate(date)] = new AdpDayData())
     dayData.date = new Date(date)
-    dayData.date.setHours(0)
-    dayData.date.setMinutes(0)
-    dayData.date.setSeconds(0)
+    dayData.date.setHours(0, 0, 0, 0)
 
     if (entry.entryDetail === undefined) {
       continue
     }
 
     const rawTimePairs = entry.entryDetail[0].timePairSummary
-    let pair = new TimePair()
-    pair.description = 'Pointage'
 
-    for (const rawTimePair of rawTimePairs) {
-      const pairDate = new Date(rawTimePair.timePeriod.startDateTime)
+    if (rawTimePairs) {
+      let pair = new TimePair()
+      pair.description = 'Pointage'
 
-      if (pair.isFilled()) {
-        dayData.timePairs.push(pair)
-        pair = new TimePair()
-        pair.description = 'Pointage'
+      for (const rawTimePair of rawTimePairs) {
+        const pairDate = new Date(rawTimePair.timePeriod.startDateTime)
+
+        if (pair.isFilled()) {
+          dayData.timePairs.push(pair)
+          pair = new TimePair()
+          pair.description = 'Pointage'
+        }
+
+        pair.push(pairDate)
       }
 
-      pair.push(pairDate)
-    }
-
-    if (!pair.isEmpty()) {
-      dayData.timePairs.push(pair)
+      if (!pair.isEmpty()) {
+        dayData.timePairs.push(pair)
+      }
     }
 
     const dayPeriodSummaries = entry.entryDetail[0].dayPeriodSummary
@@ -497,38 +539,40 @@ function display () {
     }
   }
 
-  const currentDayIndex = getDayIndexFromDate(getNow())
+  if (!AdpData.isFutureWeek()) {
+    const currentDayIndex = getDayIndexFromDate(getNow())
 
-  for (let dayIndex = 0; dayIndex < DateUtils.WORKDAY_COUNT; ++dayIndex) {
-    if (dayIndex > currentDayIndex) {
-      break
+    for (let dayIndex = 0; dayIndex < DateUtils.WORKDAY_COUNT; ++dayIndex) {
+      if (dayIndex > currentDayIndex) {
+        break
+      }
+
+      const dayLabel = getDayFromIndex(dayIndex)
+      const dayTimeEl = document.querySelector(`#${dayLabel}-time`)
+      const dayTime = AdpData.getDayTime(dayLabel)
+      const timeDeltaString = getTimeDeltaString(dayTime)
+      dayTimeEl.innerHTML = timeDeltaString
+
+      if (!isWorking || dayIndex !== currentDayIndex) {
+        dayTimeEl.classList.remove('working-day-time')
+      } else {
+        dayTimeEl.classList.add('working-day-time')
+      }
     }
 
-    const dayLabel = getDayFromIndex(dayIndex)
-    const dayTimeEl = document.querySelector(`#${dayLabel}-time`)
-    const dayTime = AdpData.getDayTime(dayLabel)
-    const timeDeltaString = getTimeDeltaString(dayTime)
-    dayTimeEl.innerHTML = timeDeltaString
+    const activeTimePairEls = document.querySelectorAll('.working-time-delta')
 
-    if (!isWorking || dayIndex !== currentDayIndex) {
-      dayTimeEl.classList.remove('working-day-time')
-    } else {
-      dayTimeEl.classList.add('working-day-time')
+    for (const activeTimePairEl of activeTimePairEls) {
+      const timePair = TimePair.get(activeTimePairEl.id)
+
+      if (timePair === null) {
+        continue
+      }
+
+      activeTimePairEl.innerHTML = `[${getTimeDeltaLabel(
+        timePair.getDeltaInSeconds()
+      )}]`
     }
-  }
-
-  const activeTimePairEls = document.querySelectorAll('.working-time-delta')
-
-  for (const activeTimePairEl of activeTimePairEls) {
-    const timePair = TimePair.get(activeTimePairEl.id)
-
-    if (timePair === null) {
-      continue
-    }
-
-    activeTimePairEl.innerHTML = `[${getTimeDeltaLabel(
-      timePair.getDeltaInSeconds()
-    )}]`
   }
 }
 
