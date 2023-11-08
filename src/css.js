@@ -54,6 +54,10 @@ const CSS = `
   color: var(--global-emphasis);
 }
 
+.cumulated-daily-delta {
+  font-weight: initial;
+}
+
 .day-details {
   margin-bottom: 10px;
 }
@@ -62,6 +66,73 @@ const CSS = `
   color: var(--global-black);
   text-align: center;
   width: 100%;
+}
+
+.day-details-title {
+  margin-top: 12px !important;
+}
+
+.day-leaving-time-and-delta {
+  display: initial !important;
+  text-transform: initial !important;
+}
+
+.day-leaving-time-delta {
+  color: var(--sub-text-color);
+  display: initial !important;
+  font-weight: initial;
+  text-transform: initial !important;
+}
+
+.day-predictions {
+  display: flex;
+  margin-top: 10px !important;
+  font-size: 0.5em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.day-predictions-help-icon::before {
+  background-color: var(--global-blue);
+  border-radius: 5px;
+  content: attr(data-tooltip);
+  color: var(--global-white);
+  cursor: pointer;
+  font-weight: initial;
+  opacity: 0;
+  padding: 5px;
+  position: absolute;
+  text-align: center;
+  text-transform: initial;
+  transform: translate(-145px, calc(-70%));
+  transition: background-color 0.5s, opacity 0.3s, transform 0.3s;
+  visibility: hidden;
+  width: 300px;
+  white-space: pre-line;
+}
+
+.day-predictions-help-icon:hover::before {
+  background-color: var(--global-emphasis);
+  cursor: pointer;
+  opacity: 1;
+  transform: translate(-145px, calc(-105%));
+  visibility: visible;
+}
+
+.day-prediction {
+  flex: 2;
+}
+
+.day-predictions-help-icon {
+  cursor: pointer;
+}
+
+.day-predictions-separator {
+  color: var(--global-gray);
+  flex: 1;
+  font-size: 0.8em;
+  position: relative;
+  top: 2px;
 }
 
 .time-arrow {
@@ -81,6 +152,8 @@ const CSS = `
 
 .time-pair-element {
   flex: 2;
+  max-height: 15px;
+  overflow: hidden;
 }
 
 .time-pair-no-entries {
@@ -120,28 +193,37 @@ const CSS = `
 }
 
 .time-pair-entry-help::before {
-  background-color: var(--global-emphasis);
+  background-color: var(--global-blue);
+  border-radius: 5px;
   content: attr(data-tooltip);
   color: var(--global-white);
   cursor: pointer;
-  border-radius: 5px;
   opacity: 0;
   padding: 5px;
   position: absolute;
   text-align: center;
   transform: translate(5px, -2px);
-  transition: background-color 0.7s, opacity 0.3s, transform 0.3s;
+  transition: background-color 0.5s, opacity 0.3s, transform 0.3s;
   visibility: hidden;
   width: 120px;
   z-index: 1;
 }
 
 .time-pair-entry-help:hover::before {
-  background-color: var(--global-blue);
+  background-color: var(--global-emphasis);
   cursor: pointer;
   opacity: 1;
   transform: translate(20px, -2px);
   visibility: visible;
+}
+
+.time-pair-entry-help-left::before {
+  transform: translateX(-100%) translate(10px, -2px) !important;
+}
+
+.time-pair-entry-help-left:hover::before {
+  transform: translateX(-100%) translate(-5px, -2px) !important;
+  transform-origin: right center !important;
 }
 
 .time-pair-entry-help-icon {

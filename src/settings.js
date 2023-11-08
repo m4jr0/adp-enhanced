@@ -1,12 +1,12 @@
 class Settings {
   static get (key, defaultValue = null) {
-    if (this.has(key)) {
+    if (Settings.has(key)) {
       return JSON.parse(localStorage.getItem(key))
     } else if (defaultValue !== null) {
       return defaultValue
     }
 
-    return this.getDefault(key)
+    return Settings.getDefault(key)
   }
 
   static set (key, value) {
@@ -18,7 +18,7 @@ class Settings {
   }
 
   static reset (key) {
-    set(key, null)
+    Settings.set(key, null)
   }
 
   static getDefault (key) {
@@ -89,10 +89,6 @@ class SettingsKeys {
     'ADP_ENHANCED_TIME_RECOMMENDED_ENDING_WORKING_HOURS'
   static TIME_RECOMMENDED_ENDING_WORKING_MINUTES =
     'ADP_ENHANCED_TIME_RECOMMENDED_ENDING_WORKING_MINUTES'
-  static TIME_RECOMMENDED_LUNCH_BREAK_HOURS =
-    'ADP_ENHANCED_TIME_RECOMMENDED_LUNCH_BREAK_HOURS'
-  static TIME_RECOMMENDED_LUNCH_BREAK_MINUTES =
-    'ADP_ENHANCED_TIME_RECOMMENDED_LUNCH_BREAK_MINUTES'
   static TIME_LOWEST_TOTAL_EXTRA_HOURS =
     'ADP_ENHANCED_TIME_LOWEST_TOTAL_EXTRA_HOURS'
   static TIME_LOWEST_TOTAL_EXTRA_MINUTES =
@@ -139,8 +135,6 @@ class SettingsInternal {
     [SettingsKeys.TIME_RECOMMENDED_ENDING_LUNCH_MINUTES]: 0,
     [SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_HOURS]: 18,
     [SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_MINUTES]: 0,
-    [SettingsKeys.TIME_RECOMMENDED_LUNCH_BREAK_HOURS]: 1,
-    [SettingsKeys.TIME_RECOMMENDED_LUNCH_BREAK_MINUTES]: 30,
     [SettingsKeys.TIME_LOWEST_TOTAL_EXTRA_HOURS]: -3,
     [SettingsKeys.TIME_LOWEST_TOTAL_EXTRA_MINUTES]: 0,
     [SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_HOURS]: 3,

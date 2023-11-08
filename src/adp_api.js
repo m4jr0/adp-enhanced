@@ -250,7 +250,7 @@ function isSpecificTimePair (codeName) {
   return false
 }
 
-function getTimePairDescriptionFromAdp (codeName, dayPeriodValue) {
+function getTimePairDescriptionFromAdp (codeName, dayPeriodValue = null) {
   let description = ''
 
   if (codeName === 'RV') {

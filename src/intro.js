@@ -1,9 +1,16 @@
 class Intro {
-  static STEP_DATA = [{ version: '0.0.1', stepsFunc: get0dot0dot1 }]
+  static STEP_DATA = [
+    { version: '0.0.1', stepsFunc: get0dot0dot1 },
+    { version: '0.9.4', stepsFunc: get0dot9dot4 },
+    { version: '0.9.10', stepsFunc: get0dot9dot10 }
+  ]
 }
 
 function parseVersion (versionString) {
-  const parsedVersion = versionString.split('.').map(Number)
+  const parsedVersion = versionString
+    ? versionString.split('.').map(Number)
+    : []
+
   parsedVersion[0] ||= 0
   parsedVersion[1] ||= 0
   parsedVersion[2] ||= 0
@@ -25,25 +32,85 @@ function get0dot0dot1 () {
   return [
     {
       title: 'Yay ! 💃',
-      intro: `Bienvenue sur ${Global.ADP_APP_NAME} !`
+      intro: `Bienvenue sur ${Global.ADP_APP_NAME} !`,
+      priority: 0
     },
     {
       element: document.querySelector('#beginning-extra-time'),
       title: 'Heures supplémentaires',
       intro: `Vos heures supplémentaires (qui sont directement données par ADP) sont visibles ici.`,
-      position: 'top'
+      position: 'top',
+      priority: 1
     },
     {
       element: document.querySelector('#monday-details'),
       title: 'Pointage & événements',
       intro: `Le détail de la journée est divisé entre vos heures pointées et les événements (jours fériés, etc.). Survolez le point d'interrogation à droite d'une paire horaire pour connaître sa nature.`,
-      position: 'top'
+      position: 'top',
+      priority: 1
     },
     {
       title: "En cas d'erreur...",
       element: document.querySelector('#adp-enhanced-toggle-button'),
       intro: `Un problème avec ${Global.ADP_APP_NAME} ? Pas de panique ! Le script en est encore au stade expérimental... En cas de pépin, désactivez simplement ${Global.ADP_APP_NAME} en un clic !`,
-      position: 'top'
+      position: 'top',
+      priority: 999
+    }
+  ]
+}
+
+function get0dot9dot4 () {
+  const getValidPredictionEl = () => {
+    const els = document.querySelectorAll('.day-predictions')
+    let selectedEl = null
+
+    for (const el of els) {
+      // Some prediction elements might be hidden, so we take the first one that is visible.
+      if (window.getComputedStyle(el).display !== 'none') {
+        selectedEl = el
+        break
+      }
+    }
+
+    if (selectedEl === null) {
+      // Fallback. Who installs ADP Enhanced during the weekend?
+      selectedEl = document.querySelector('#monday-time')
+    }
+
+    return selectedEl
+  }
+
+  return [
+    {
+      element: getValidPredictionEl(),
+      title: 'Horaires de départ conseillés',
+      intro: `Ici sont affichés les horaires conseillés pour finir votre journée. Survolez le point d'interrogation pour avoir plus de détails.`,
+      position: 'top',
+      priority: 2
+    }
+  ]
+}
+
+function get0dot9dot10 () {
+  const getValidPredictionEl = () => {
+    const els = document.querySelectorAll('.cumulated-daily-delta')
+    let selectedEl = els.length > 0 ? els[0] : null
+
+    if (selectedEl === null) {
+      // Fallback. Who installs ADP Enhanced during the weekend?
+      selectedEl = document.querySelector('#monday-time')
+    }
+
+    return selectedEl
+  }
+
+  return [
+    {
+      element: getValidPredictionEl(),
+      title: 'Delta cumulé sur la semaine',
+      intro: `Utile pour savoir si vous gagnez ou perdez du temps sur vos 35 heures !`,
+      position: 'top',
+      priority: 1
     }
   ]
 }
@@ -60,27 +127,30 @@ function getSteps () {
       return
     }
 
-    steps = [...steps, ...stepData.stepsFunc()]
+    for (const newStep of stepData.stepsFunc()) {
+      newStep.version = stepData.version
+      steps.push(newStep)
+    }
   })
 
-  return steps
+  return sortArrayOfObjects(steps, ['priority', 'version'])
 }
 
 function loadIntro () {
-  var steps = getSteps()
+  const steps = getSteps()
 
   if (steps.length === 0) {
     return
   }
 
-  var css = document.createElement('link')
+  const css = document.createElement('link')
 
   css.href = 'https://unpkg.com/intro.js/introjs.css'
   css.type = 'text/css'
   css.rel = 'stylesheet'
   document.head.appendChild(css)
 
-  var script = document.createElement('script')
+  const script = document.createElement('script')
   script.src = 'https://unpkg.com/intro.js/intro.js'
   script.onload = async () => {
     introJs()

@@ -66,25 +66,25 @@ function getViewHtml () {
       <div class="row time-calendar timecard-calendar monospace-numbers">
         <div class="time-calendar-table time-calendar-week ng-scope">
           <div class="time-calendar-table-row ng-scope">
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope monday-day">
               <div class="cell-day-header ng-binding">Lun</div>
             </div>
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope tuesday-day">
               <div class="cell-day-header ng-binding">Mar</div>
             </div>
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope wednesday-day">
               <div class="cell-day-header ng-binding">Mer</div>
             </div>
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope thursday-day">
               <div class="cell-day-header ng-binding">Jeu</div>
             </div>
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope friday-day">
               <div class="cell-day-header ng-binding">Ven</div>
             </div>
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope saturday-day">
               <div class="cell-day-header ng-binding">Sam</div>
             </div>
-            <div class="time-calendar-table-cell ng-scope">
+            <div class="time-calendar-table-cell ng-scope sunday-day">
               <div class="cell-day-header ng-binding">Dim</div>
             </div>
           </div>
@@ -92,15 +92,20 @@ function getViewHtml () {
         <div class="time-calendar-week ng-scope selected-week last-week">
           <div class="time-calendar-table">
             <div class="time-calendar-table-row">
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded monday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="monday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times monday-times">
                             <div id="monday-time">-</div>
+                            <div id="monday-predictions" class="day-predictions">
+                              <p id="monday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="monday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="monday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -108,26 +113,30 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="monday-details">
+                      <div class="ng-isolate-scope day-details day-times monday-times" id="monday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
                   </timecard-day-schedule>
                 </div>
               </div>
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded tuesday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="tuesday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times tuesday-times">
                             <div id="tuesday-time">-</div>
+                            <div id="tuesday-predictions" class="day-predictions">
+                              <p id="tuesday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="tuesday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="tuesday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -135,26 +144,30 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="tuesday-details">
+                      <div class="ng-isolate-scope day-details day-times tuesday-times" id="tuesday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
                   </timecard-day-schedule>
                 </div>
               </div>
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded wednesday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="wednesday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times wednesday-times">
                             <div id="wednesday-time">-</div>
+                            <div id="wednesday-predictions" class="day-predictions">
+                              <p id="wednesday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="wednesday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="wednesday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -162,26 +175,30 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="wednesday-details">
+                      <div class="ng-isolate-scope day-details day-times wednesday-times" id="wednesday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
                   </timecard-day-schedule>
                 </div>
               </div>
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded thursday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="thursday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times thursday-times">
                             <div id="thursday-time">-</div>
+                            <div id="thursday-predictions" class="day-predictions">
+                              <p id="thursday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="thursday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="thursday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -189,26 +206,30 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="thursday-details">
+                      <div class="ng-isolate-scope day-details day-times thursday-times" id="thursday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
                   </timecard-day-schedule>
                 </div>
               </div>
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded friday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="friday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times friday-times">
                             <div id="friday-time">-</div>
+                            <div id="friday-predictions" class="day-predictions">
+                              <p id="friday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="friday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="friday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -216,26 +237,30 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="friday-details">
+                      <div class="ng-isolate-scope day-details day-times friday-times" id="friday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
                   </timecard-day-schedule>
                 </div>
               </div>
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded saturday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="saturday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times saturday-times">
                             <div id="saturday-time">-</div>
+                            <div id="saturday-predictions" class="day-predictions">
+                              <p id="saturday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="saturday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="saturday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -243,26 +268,30 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="saturday-details">
+                      <div class="ng-isolate-scope day-details day-times saturday-times" id="saturday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
                   </timecard-day-schedule>
                 </div>
               </div>
-              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded">
+              <div class="time-calendar-table-cell timecard-day cell-content-details-expanded sunday-day">
                 <div class="cell-content timecard-day-content view-only cell-content-expanded">
                   <div>
                     <div ng-switch-when="content" class="ng-scope">
                       <day-summary-content>
                         <div class="timecard-day-summary">
                           <div class="cell-date ng-binding" id="sunday-month-day">-</div>
-                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope">
+                          <div class="timecard-calendar hours-summary day-time ng-binding ng-scope day-times sunday-times">
                             <div id="sunday-time">-</div>
+                            <div id="sunday-predictions" class="day-predictions">
+                              <p id="sunday-daily-prediction" class="day-prediction">-</p>
+                              <p class="day-predictions-separator"><span id="sunday-predictions-help-icon" class="day-predictions-help-icon"><i class="fa fa-question-circle"></i></span></p>
+                              <p id="sunday-weekly-prediction" class="day-prediction">-</p>
+                            </div>
                           </div>
                         </div>
                       </day-summary-content>
@@ -270,11 +299,10 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details" id="sunday-details">
+                      <div class="ng-isolate-scope day-details day-times sunday-times" id="sunday-details">
                       </div>
+                    </timecard-calendar-view-see-details>
                   </div>
-
-                  </timecard-calendar-view-see-details>
                   <timecard-day-schedule class="ng-scope ng-isolate-scope">
                     <div>
                     </div>
@@ -333,7 +361,7 @@ const listenForRefreshed = (function () {
 
 async function setup () {
   listenForRefreshed()
-  getStartAndEndDates()
+  AdpData.setup()
   await getVersionData()
   await getAssociateOid()
   await getExtraHours()
@@ -345,6 +373,8 @@ async function setup () {
   await getCalendarEvents().then(calendarEvents => {
     setCalendarEvents(calendarEvents)
   })
+
+  AdpData.refresh()
 
   const headerEl = document.querySelector('.row .timesheet-totals')
 
@@ -361,14 +391,14 @@ async function setup () {
   headerEl.innerHTML = getHeaderHtml()
   viewEl.innerHTML = getViewHtml()
 
-  for (let i = 0; i < DateUtils.WEEKDAY_COUNT; ++i) {
-    const dayLabel = getDayFromIndex(i)
+  for (let dayIndex = 0; dayIndex < DateUtils.WORKDAY_COUNT; ++dayIndex) {
+    const dayLabel = getDayLabelFromDayIndex(dayIndex)
     const monthDayEl = document.querySelector(`#${dayLabel}-month-day`)
-    monthDayEl.innerHTML = AdpData.getDayDate(dayLabel).getDate()
+    monthDayEl.innerHTML = AdpData.getDayDate(dayIndex).getDate()
     const timePairsEl = document.querySelector(`#${dayLabel}-details`)
-    const dayData = AdpData.days[dayLabel]
-
-    timePairsEl.innerHTML = '<p class="day-details-title">Pointage</p>'
+    const dayData = AdpData.days[dayIndex]
+    timePairsEl.innerHTML =
+      '<p class="day-details-title day-details-title-first">Pointage</p>'
 
     if (dayData.timePairs.length > 0) {
       dayData.timePairs.forEach((timePair, index) => {
@@ -390,7 +420,7 @@ async function setup () {
     }
 
     let beginningExtraTimesEl = document.querySelector('#beginning-extra-time')
-    beginningExtraTimesEl.innerHTML = getTimeDeltaString(
+    beginningExtraTimesEl.innerHTML = getTimeSimpleDeltaLabel(
       AdpData.beginningExtraTime
     )
 
@@ -403,10 +433,10 @@ async function setup () {
 
 function setCalendarTimes (calendarEntries) {
   for (const entry of calendarEntries) {
-    const date = new Date(entry.entryDate)
-    const dayData = (AdpData.days[getDayLabelFromDate(date)] = new AdpDayData())
-    dayData.date = new Date(date)
-    dayData.date.setHours(0, 0, 0, 0)
+    const date = stripHoursMinutesSecondsAndMilliseconds(entry.entryDate)
+    const dayIndex = getDayIndexFromDate(date)
+    const dayData = (AdpData.days[dayIndex] = new DayData(dayIndex))
+    dayData.date = date
 
     if (entry.entryDetail === undefined) {
       continue
@@ -415,15 +445,35 @@ function setCalendarTimes (calendarEntries) {
     const rawTimePairs = entry.entryDetail[0].timePairSummary
 
     if (rawTimePairs) {
-      let pair = new TimePair()
+      let pair = new TimePair(dayIndex, null)
       pair.description = 'Pointage'
 
       for (const rawTimePair of rawTimePairs) {
-        const pairDate = new Date(rawTimePair.timePeriod.startDateTime)
+        const pairDate = stripMilliseconds(rawTimePair.timePeriod.startDateTime)
+        const codeName = rawTimePair.codeName
+
+        if (isSpecificTimePair(codeName)) {
+          const specificPair = new TimePair(dayIndex, null)
+
+          const pairEndDate = stripMilliseconds(
+            rawTimePair.timePeriod.endDateTime
+          )
+
+          specificPair.push(pairDate)
+          specificPair.push(pairEndDate)
+          specificPair.description = getTimePairDescriptionFromAdp(codeName)
+          dayData.specialTimePairs.push(specificPair)
+          continue
+        }
+
+        if (codeName !== 'punch') {
+          log(`Unknown or unsupported code name: ${codeName}.`, Log.Warning)
+          continue
+        }
 
         if (pair.isFilled()) {
           dayData.timePairs.push(pair)
-          pair = new TimePair()
+          pair = new TimePair(dayIndex, pair)
           pair.description = 'Pointage'
         }
 
@@ -452,20 +502,22 @@ function setCalendarTimes (calendarEntries) {
         const dayPeriodValue = dayPeriodSummary.dayPeriodValue
         const isMorning = dayPeriodValue === 'M' || dayPeriodValue === 'J'
         const isAfternoon = dayPeriodValue === 'A' || dayPeriodValue === 'J'
+        let morningPair = null
 
         if (isMorning) {
-          dayData.specialTimePairs.push(
-            getRecommendedMorningTimePair(
-              dayData.date,
-              getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
-            )
+          morningPair = getRecommendedMorningTimePair(
+            dayData.date,
+            getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
           )
+
+          dayData.specialTimePairs.push(morningPair)
         }
 
         if (isAfternoon) {
           dayData.specialTimePairs.push(
             getRecommendedAfternoonTimePair(
               dayData.date,
+              morningPair,
               getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
             )
           )
@@ -490,26 +542,48 @@ function setCalendarEvents (calendarEvents) {
     }
 
     const startTime = calendarEvent.timePeriod.startDateTime
-    const date = new Date(startTime)
-    const dayLabel = getDayLabelFromDate(date)
-    const dayData = AdpData.days[dayLabel]
-
-    dayData.specialTimePairs.push(
-      getRecommendedMorningTimePair(dayData.date, 'Jour férié (matin)')
+    const date = copyOrGenerateDate(startTime)
+    const dayIndex = getDayIndexFromDate(date)
+    const dayData = AdpData.days[dayIndex]
+    const morningPair = getRecommendedMorningTimePair(
+      dayData.date,
+      'Jour férié (matin)'
     )
 
+    dayData.specialTimePairs.push(morningPair)
+
     dayData.specialTimePairs.push(
-      getRecommendedAfternoonTimePair(dayData.date, 'Jour férié (après-midi)')
+      getRecommendedAfternoonTimePair(
+        dayData.date,
+        morningPair,
+        'Jour férié (après-midi)'
+      )
     )
   }
 }
 
-function display () {
-  AdpData.refresh()
-  const isWorking = AdpData.isWorking()
+function generateLeavingTime (leavingTime, timeLeft, isTimeActive, isDelta) {
+  const additionalClasses = isTimeActive ? 'working-time-delta' : ''
+  let toReturn = `<span class="day-leaving-time-and-delta ${additionalClasses}">${getTimeDeltaLabel(
+    leavingTime,
+    'h',
+    '',
+    false
+  )}</span>`
 
+  if (isDelta) {
+    toReturn += ` <span class="day-leaving-time-delta ${additionalClasses}">[${getTimeDeltaLabel(
+      -timeLeft
+    )}]</span>`
+  }
+
+  return toReturn
+}
+
+function display () {
+  const isWorking = AdpData.isWorking()
   const progressionEl = document.querySelector('#total-time')
-  progressionEl.innerHTML = getTimeDeltaString(AdpData.totalTime)
+  progressionEl.innerHTML = getTimeSimpleDeltaLabel(AdpData.totalTime)
 
   const progressionSubTextEl = document.querySelector('adp-pokerchip-subtext')
   const progressionMaskEl = document.querySelector('adp-pokerchip-mask')
@@ -539,19 +613,66 @@ function display () {
     }
   }
 
-  if (!AdpData.isFutureWeek()) {
+  if (AdpData.isFutureWeek()) {
+    const dayTimeEls = document.querySelectorAll('.day-times')
+
+    dayTimeEls.forEach(dayTimeEl => {
+      dayTimeEl.style.display = 'none'
+    })
+  } else {
     const currentDayIndex = getDayIndexFromDate(getNow())
 
     for (let dayIndex = 0; dayIndex < DateUtils.WORKDAY_COUNT; ++dayIndex) {
-      if (dayIndex > currentDayIndex) {
-        break
+      const dayData = AdpData.days[dayIndex]
+      const dayLabel = getDayLabelFromDayIndex(dayIndex)
+
+      if (dayIndex < currentDayIndex) {
+        document.querySelector(`#${dayLabel}-predictions`).style.display =
+          'none'
+      } else {
+        const dailyRequiredTime = DateConsts.getDailyRequiredTime()
+
+        document
+          .querySelector(`#${dayLabel}-predictions-help-icon`)
+          .setAttribute(
+            'data-tooltip',
+            `À gauche : temps de départ conseillé pour effectuer une journée de ${getLongTimeDeltaLabel(
+              dailyRequiredTime
+            )}.\n\nÀ droite : temps de départ conseillé pour effectuer une semaine de ${getLongTimeDeltaLabel(
+              dailyRequiredTime * DateUtils.WORKDAY_COUNT
+            )} (et donc, pour être à ${getLongTimeDeltaLabel(
+              dailyRequiredTime * (dayIndex + 1)
+            )} à la fin de cette journée).`
+          )
+
+        document.querySelector(`#${dayLabel}-daily-prediction`).innerHTML =
+          generateLeavingTime(
+            dayData.dailyLeavingTime,
+            dayData.dailyTimeLeft,
+            isWorking && dayIndex === currentDayIndex,
+            dayIndex === currentDayIndex
+          )
+
+        document.querySelector(`#${dayLabel}-weekly-prediction`).innerHTML =
+          generateLeavingTime(
+            dayData.weeklyLeavingTime,
+            dayData.weeklyTimeLeft,
+            isWorking,
+            dayIndex === currentDayIndex
+          )
       }
 
-      const dayLabel = getDayFromIndex(dayIndex)
+      if (dayIndex > currentDayIndex) {
+        continue
+      }
+
       const dayTimeEl = document.querySelector(`#${dayLabel}-time`)
-      const dayTime = AdpData.getDayTime(dayLabel)
-      const timeDeltaString = getTimeDeltaString(dayTime)
-      dayTimeEl.innerHTML = timeDeltaString
+      const dayTime = AdpData.getDayTime(dayIndex)
+      dayTimeEl.innerHTML = `${getTimeSimpleDeltaLabel(
+        dayTime
+      )} <span class="cumulated-daily-delta">${getTimeSimpleDeltaLabel(
+        dayData.cumulatedDailyDelta
+      )}</span>`
 
       if (!isWorking || dayIndex !== currentDayIndex) {
         dayTimeEl.classList.remove('working-day-time')
@@ -570,9 +691,22 @@ function display () {
       }
 
       activeTimePairEl.innerHTML = `[${getTimeDeltaLabel(
-        timePair.getDeltaInSeconds()
+        TimePair.getNormalized(timePair.id).getDeltaInSeconds()
       )}]`
     }
+  }
+
+  for (
+    let dayIndex = DateUtils.WORKDAY_COUNT;
+    dayIndex < DateUtils.WEEKDAY_COUNT;
+    ++dayIndex
+  ) {
+    const dayLabel = getDayLabelFromDayIndex(dayIndex)
+    const dayTimeEls = document.querySelectorAll(`.${dayLabel}-day`)
+
+    dayTimeEls.forEach(dayTimeEl => {
+      dayTimeEl.style.display = 'none'
+    })
   }
 }
 
@@ -581,6 +715,11 @@ function startRefresh () {
   display()
 
   setTimeout(() => {
-    setInterval(display, 1000 * 30)
+    setInterval(refresh, 1000 * 30)
   }, delay)
+}
+
+function refresh () {
+  AdpData.refresh()
+  display()
 }

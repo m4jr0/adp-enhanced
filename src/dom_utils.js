@@ -1,6 +1,6 @@
 function waitForElement (querySelector, timeout) {
   return new Promise((resolve, reject) => {
-    var timeoutId = -1
+    let timeoutId = -1
 
     if (document.querySelectorAll(querySelector).length > 0) {
       return resolve()

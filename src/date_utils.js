@@ -14,6 +14,7 @@ class DateUtils {
 class TimePair {
   static ID_COUNTER = -1
   static pairs_ = {}
+  static normalizedPairs_ = {}
 
   static get (id) {
     if (!TimePair.pairs_.hasOwnProperty(id)) {
@@ -23,14 +24,38 @@ class TimePair {
     return TimePair.pairs_[id]
   }
 
+  static getNormalized (id) {
+    if (!TimePair.normalizedPairs_.hasOwnProperty(id)) {
+      log(
+        `Non-existing normalized pair! Non-normalized ID is: ${id}.`,
+        Log.Error
+      )
+
+      return null
+    }
+
+    return TimePair.normalizedPairs_[id]
+  }
+
+  static setup () {
+    TimePair.ID_COUNTER = -1
+    TimePair.pairs_ = {}
+    TimePair.normalizedPairs_ = {}
+  }
+
   id = null
+  dayIndex = -1
   from = null
   to = null
   description = null
+  previousPair = null
 
-  constructor () {
+  constructor (dayIndex, previousPair, fromPair = null) {
     this.id = `${this.constructor.name}_${++TimePair.ID_COUNTER}`
+    this.fromPair = fromPair
+    this.dayIndex = dayIndex
     TimePair.pairs_[this.id] = this
+    this.previousPair = previousPair
   }
 
   isEmpty () {
@@ -42,7 +67,11 @@ class TimePair {
   }
 
   isActive () {
-    return this.from !== null && this.to === null
+    return (
+      this.from !== null &&
+      ((this.fromPair !== null && this.fromPair.to === null) ||
+        this.to === null)
+    )
   }
 
   push (time) {
@@ -62,9 +91,8 @@ class TimePair {
 
     const arrow = isHtml ? ' <span class="time-arrow">→</span> ' : ' → '
     let label = `${getHoursMinutesLabel(this.from)} ${arrow} `
-    const isWorking = this.to === null
 
-    if (isWorking) {
+    if (this.to === null) {
       label += isHtml ? `${getLoadingText()}` : '...'
     } else {
       label += getHoursMinutesLabel(this.to)
@@ -74,7 +102,8 @@ class TimePair {
       label = `<div class="time-pair-element"><span class="time-bullet">·</span> ${label}</div>`
     }
 
-    const timeDeltaLable = getTimeDeltaLabel(this.getDeltaInSeconds())
+    const deltaInSeconds = TimePair.getNormalized(this.id).getDeltaInSeconds()
+    const timeDeltaLabel = getTimeDeltaLabel(deltaInSeconds)
 
     let dataTooltip = !this.description
       ? 'Paire non reconnue'
@@ -82,10 +111,16 @@ class TimePair {
     dataTooltip = `data-tooltip="${dataTooltip}"`
 
     if (isHtml) {
-      const additionalClasses = isWorking ? 'working-time-delta' : ''
-      label += `<div class="time-delta"><span id="${this.id}" class="${additionalClasses}">[${timeDeltaLable}]</span><span class="time-pair-entry-help" ${dataTooltip}><i class="time-pair-entry-help-icon fa fa-question-circle"></i></span></div>`
+      const additionalClasses = this.isActive() ? 'working-time-delta' : ''
+
+      const additionalIconClasses =
+        this.dayIndex == DateUtils.WORKDAY_COUNT - 1
+          ? 'time-pair-entry-help-left'
+          : ''
+
+      label += `<div class="time-delta"><span id="${this.id}" class="${additionalClasses}">[${timeDeltaLabel}]</span><span class="time-pair-entry-help ${additionalIconClasses}" ${dataTooltip}><i class="time-pair-entry-help-icon fa fa-question-circle"></i></span></div>`
     } else {
-      label += ` ${timeDeltaLable}`
+      label += ` ${timeDeltaLabel}`
     }
 
     if (isHtml) {
@@ -101,11 +136,13 @@ class TimePair {
       return 0
     }
 
-    const to = this.to === null ? new Date() : this.to
+    const to = this.to === null ? getNow() : this.to
     return getTimeDeltaInSeconds(this.from, to)
   }
 
   normalize () {
+    TimePair.normalizedPairs_[this.id] = this
+
     if (this.isEmpty()) {
       return
     }
@@ -130,10 +167,73 @@ class TimePair {
     if (this.to.getHours() >= hours && this.to.getMinutes() > minutes) {
       this.to.setHours(hours, minutes)
     }
+
+    if (
+      this.isMorning() &&
+      convertDateToSeconds(stripYearMonthAndDay(this.to)) >
+        DateConsts.getMaximumBeginningLunchTime()
+    ) {
+      this.to = stripHoursMinutesSecondsAndMilliseconds(this.to)
+      shiftDateWithSeconds(this.to, DateConsts.getMaximumBeginningLunchTime())
+    }
+
+    if (this.previousPair !== null) {
+      if (this.previousPair.isMorning() && this.isAfternoon()) {
+        AdpData.days[this.dayIndex].afternoonBeginningPair = this
+
+        const delta =
+          convertDateToSeconds(stripYearMonthAndDay(this.from)) -
+          convertDateToSeconds(stripYearMonthAndDay(this.previousPair.to)) -
+          DateConsts.getMinimumLunchBreakTime()
+
+        if (delta < 0) {
+          this.from = stripHoursMinutesSecondsAndMilliseconds(this.from)
+          shiftDateWithSeconds(this.from, DateConsts.getEndingLunchBreakTime())
+        }
+      }
+    }
+
+    if (this.from > this.to) {
+      this.to = copyOrGenerateDate(this.from)
+    }
+
+    if (this.from <= getNow()) {
+      if (this.isMorning()) {
+        AdpData.days[this.dayIndex].morningEndPair = this
+        const dayData = AdpData.days[this.dayIndex]
+
+        if (dayData.remainingMorningBreakTime > 0) {
+          const delta = this.getDeltaInSeconds()
+          const toShift = Math.min(delta, dayData.remainingMorningBreakTime)
+          dayData.remainingMorningBreakTime -= toShift
+          shiftDateWithSeconds(this.from, toShift)
+        }
+      } else if (this.isAfternoon()) {
+        const dayData = AdpData.days[this.dayIndex]
+
+        if (dayData.remainingAfternoonBreakTime > 0) {
+          const delta = this.getDeltaInSeconds()
+          const toShift = Math.min(delta, dayData.remainingAfternoonBreakTime)
+          dayData.remainingAfternoonBreakTime -= toShift
+          shiftDateWithSeconds(this.from, toShift)
+        }
+      }
+    }
+  }
+
+  isMorning () {
+    return !this.isAfternoon()
+  }
+
+  isAfternoon () {
+    return (
+      convertDateToSeconds(stripYearMonthAndDay(this.from)) >
+      DateConsts.getBeginningLunchBreakTime()
+    )
   }
 
   getFromTimeInSeconds () {
-    var timeObj = {
+    const timeObj = {
       hours: this.from.getHours(),
       minutes: this.from.getMinutes()
     }
@@ -142,7 +242,7 @@ class TimePair {
   }
 
   getToTimeInSeconds () {
-    var timeObj = {
+    const timeObj = {
       hours: this.to.getHours(),
       minutes: this.to.getMinutes()
     }
@@ -151,11 +251,13 @@ class TimePair {
   }
 
   getNormalizedCopy () {
-    const newPair = new TimePair()
+    const newPair = new TimePair(this.dayIndex, this.previousPair, this)
     // Make deep copies.
-    newPair.from = this.from === null ? null : new Date(this.from)
-    newPair.to = this.to === null ? null : new Date(this.to)
+    newPair.from = this.from === null ? null : copyOrGenerateDate(this.from)
+    newPair.to = this.to === null ? null : copyOrGenerateDate(this.to)
+    newPair.description = this.description
     newPair.normalize()
+    TimePair.normalizedPairs_[this.id] = newPair
     return newPair
   }
 
@@ -164,60 +266,154 @@ class TimePair {
   }
 }
 
-class DayData {
-  timePairs = []
-}
+function getNow (isYearMonthAndDayStrip = false, isRealNowForced = false) {
+  let realNow = stripMilliseconds(new Date())
+  let now = null
 
-function getStartAndEndDates () {
-  const dateEl = document.getElementsByClassName(
-    'periods-nav-item displayed-period text-center pointer'
-  )[0]
-
-  const regex =
-    /(\d{1,2})\s*([a-z]{3,4}\.?)\s*-\s*(\d{1,2})\s*([a-z]{3,4}\.)\s*(\d{4})/i
-  const match = dateEl.innerText.match(regex)
-
-  if (match === null) {
-    return new Date()
+  if (!isRealNowForced) {
+    if (realNow <= AdpData.startDate) {
+      // Case: future.
+      now = copyOrGenerateDate(AdpData.startDate)
+    } else if (realNow >= AdpData.endDate) {
+      // Case: past.
+      now = copyOrGenerateDate(AdpData.endDate)
+    }
   }
 
-  const startDay = parseInt(match[1], 10)
-  const startMonth = getMonthFromShortLabel(match[2])
-  const endDay = parseInt(match[3], 10)
-  const endMonth = getMonthFromShortLabel(match[4])
-  const year = parseInt(match[5], 10)
+  if (now === null) {
+    // Case: present.
+    now = realNow
+  }
 
-  AdpData.startDate = new Date(
-    endMonth >= startMonth ? year : year - 1,
-    startMonth,
-    startDay,
+  if (Global.isNowOverride()) {
+    now = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      Global.FORCED_HOURS,
+      Global.FORCED_MINUTES,
+      0,
+      0
+    )
+  }
+
+  return isYearMonthAndDayStrip ? stripYearMonthAndDay(now) : now
+}
+
+function shiftDateWithSeconds (date, seconds) {
+  date.setSeconds(date.getSeconds() + seconds)
+}
+
+function isGainingTimeDuringLunchBreak (dayIndex) {
+  const strippedNow = convertDateToSeconds(getNow(true))
+
+  return (
+    strippedNow > DateConsts.getRecommendedBeginningLunchTime() &&
+    strippedNow < DateConsts.getMaximumBeginningLunchTime() &&
+    (dayIndex === AdpData.dayIndex ||
+      AdpData.days[dayIndex].predictedCumulatedWeeklyDelta !== 0)
+  )
+}
+
+function isWithinTimeBoundaries (strippedTime) {
+  return (
+    (strippedTime >= DateConsts.getMinimumBeginningWorkingTime() &&
+      strippedTime <= DateConsts.getRecommendedBeginningLunchTime()) ||
+    (strippedTime >= DateConsts.getRecommendedBeginningLunchTime() &&
+      strippedTime < DateConsts.getMaximumBeginningLunchTime()) ||
+    (strippedTime >= DateConsts.getMaximumBeginningLunchTime() &&
+      strippedTime <= DateConsts.getMaximumLeavingWorkingTime())
+  )
+}
+
+function stripMilliseconds (date) {
+  date = copyOrGenerateDate(date)
+
+  date = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    0
+  )
+
+  return date
+}
+
+function copyOrGenerateDate (date) {
+  const newDate = new Date(date)
+  newDate.setMilliseconds(0)
+  return newDate
+}
+
+function stripHoursMinutesSecondsAndMilliseconds (date) {
+  date = new copyOrGenerateDate(date)
+
+  date = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
     0,
     0,
     0
   )
 
-  AdpData.endDate = new Date(year, endMonth, endDay, 23, 59, 59)
+  return date
 }
 
-function getNow () {
-  let realNow = new Date()
-  let now = null
+function stripYearMonthAndDay (date) {
+  date = new copyOrGenerateDate(date)
 
-  if (realNow <= AdpData.startDate) {
-    // Case: future.
-    now = new Date(AdpData.startDate)
-  } else if (realNow >= AdpData.endDate) {
-    // Case: past.
-    now = new Date(AdpData.endDate)
-  } else {
-    // Case: present.
-    now = realNow
-  }
+  date = new Date(
+    1970,
+    0,
+    1,
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    0
+  )
+  return date
+}
 
-  return now
+function convertDateToSeconds (date, isUtc = true) {
+  date = new copyOrGenerateDate(date)
+
+  const milliseconds = isUtc
+    ? Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+        date.getSeconds(),
+        0
+      )
+    : date.getTime()
+
+  return Math.ceil(milliseconds / 1000)
+}
+
+function getDateHoursMinutesFromSeconds (date, seconds) {
+  date = new copyOrGenerateDate(date)
+
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
+    0,
+    seconds,
+    0
+  )
 }
 
 function formatDateToYYYYMMDD (date) {
+  date = new copyOrGenerateDate(date)
+
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -248,24 +444,7 @@ function getTimeDeltaInSeconds (from, to) {
   return timeSpan
 }
 
-function getTimeDeltaString (
-  seconds,
-  hoursSeparator = ':',
-  minutesSeparator = ''
-) {
-  const sign = seconds < 0 ? '-' : '+'
-  const absSeconds = Math.abs(seconds)
-  const hours = Math.floor(absSeconds / 3600)
-    .toString()
-    .padStart(2, '0')
-  const minutes = Math.floor((absSeconds % 3600) / 60)
-    .toString()
-    .padStart(2, '0')
-
-  return `${sign}${hours}${hoursSeparator}${minutes}${minutesSeparator}`
-}
-
-function getDayFromIndex (index) {
+function getDayLabelFromDayIndex (index) {
   index %= DateUtils.WEEKDAY_COUNT
 
   switch (index) {
@@ -288,7 +467,7 @@ function getDayFromIndex (index) {
   return DateUtils.UNKNOWN_LABEL
 }
 
-function getIndexFromDay (day) {
+function getDayIndexFromDayLabel (day) {
   switch (day) {
     case DateUtils.MONDAY_LABEL:
       return 0
@@ -310,11 +489,12 @@ function getIndexFromDay (day) {
 }
 
 function getMondayOfCurrentWeek () {
-  const today = new Date()
+  const today = getNow(false, true)
   const dayOfWeek = today.getDay()
   const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const monday = new Date(today.setDate(today.getDate() + difference))
-  monday.setHours(0, 0, 0, 0)
+  const monday = stripHoursMinutesSecondsAndMilliseconds(
+    today.setDate(today.getDate() + difference)
+  )
   return monday
 }
 
@@ -333,30 +513,37 @@ function getDayIndexFromDate (date) {
 }
 
 function getRecommendedMorningTimePair (anchorDate, description = null) {
-  const beginningDate = new Date(
-    anchorDate.getTime() +
-      DateConsts.getRecommendedBeginningWorkingTime() * 1000
-  )
-  const endDate = new Date(
-    anchorDate.getTime() + DateConsts.getRecommendedBeginningLunchTime() * 1000
+  const beginningDate = copyOrGenerateDate(anchorDate)
+  shiftDateWithSeconds(
+    beginningDate,
+    DateConsts.getRecommendedBeginningWorkingTime()
   )
 
-  const pair = new TimePair()
+  const endDate = copyOrGenerateDate(anchorDate)
+  shiftDateWithSeconds(endDate, DateConsts.getRecommendedBeginningLunchTime())
+
+  const pair = new TimePair(getDayIndexFromDate(anchorDate), null)
   pair.push(beginningDate)
   pair.push(endDate)
   pair.description = description
   return pair
 }
 
-function getRecommendedAfternoonTimePair (anchorDate, description = null) {
-  const beginningDate = new Date(
-    anchorDate.getTime() + DateConsts.getRecommendedEndingLunchTime() * 1000
-  )
-  const endDate = new Date(
-    anchorDate.getTime() + DateConsts.getRecommendedEndingWorkingTime() * 1000
+function getRecommendedAfternoonTimePair (
+  anchorDate,
+  previousPair,
+  description = null
+) {
+  const beginningDate = copyOrGenerateDate(anchorDate)
+  shiftDateWithSeconds(
+    beginningDate,
+    DateConsts.getRecommendedEndingLunchTime()
   )
 
-  const pair = new TimePair()
+  const endDate = copyOrGenerateDate(anchorDate)
+  shiftDateWithSeconds(endDate, DateConsts.getRecommendedEndingWorkingTime())
+
+  const pair = new TimePair(getDayIndexFromDate(anchorDate), previousPair)
   pair.push(beginningDate)
   pair.push(endDate)
   pair.description = description
@@ -364,12 +551,12 @@ function getRecommendedAfternoonTimePair (anchorDate, description = null) {
 }
 
 function getDayLabelFromDate (date) {
-  return getDayFromIndex(getDayIndexFromDate(date))
+  return getDayLabelFromDayIndex(getDayIndexFromDate(date))
 }
 
 function parseAdpTime (adpTime) {
   const [hours, minutes] = adpTime.split(':').map(Number)
-  const date = new Date()
+  const date = getNow()
   date.setHours(hours, minutes, 0, 0)
   return date
 }
@@ -380,12 +567,30 @@ function getHoursMinutesLabel (date) {
   return `${hours}:${minutes}`
 }
 
+function getTimeSimpleDeltaLabel (
+  seconds,
+  hoursSeparator = ':',
+  minutesSeparator = ''
+) {
+  const sign = seconds < 0 ? '-' : '+'
+  const absSeconds = Math.abs(seconds)
+  const hours = Math.floor(absSeconds / 3600)
+    .toString()
+    .padStart(2, '0')
+  const minutes = Math.floor((absSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, '0')
+
+  return `${sign}${hours}${hoursSeparator}${minutes}${minutesSeparator}`
+}
+
 function getTimeDeltaLabel (
   seconds,
   hoursSeparator = 'h',
-  minutesSeparator = 'm'
+  minutesSeparator = 'm',
+  isPlusSign = true
 ) {
-  const sign = seconds < 0 ? '-' : '+'
+  const sign = seconds < 0 ? '-' : isPlusSign ? '+' : ''
   const absSeconds = Math.abs(seconds)
   const hours = Math.floor(absSeconds / 3600)
     .toString()
@@ -399,6 +604,27 @@ function getTimeDeltaLabel (
   }
 
   return `${sign}${hours}${hoursSeparator}${minutes}${minutesSeparator}`
+}
+
+function getLongTimeDeltaLabel (seconds) {
+  const sign = seconds < 0 ? '-' : ''
+  const absSeconds = Math.abs(seconds)
+  const hours = Math.floor(absSeconds / 3600).toString()
+  const minutes = Math.floor((absSeconds % 3600) / 60).toString()
+
+  const minutesLabel = minutes > 1 ? 'minutes' : 'minute'
+
+  if (hours <= 0) {
+    return `${sign}${minutes} ${minutesLabel}`
+  }
+
+  const hoursLabel = hours > 1 ? 'heures' : 'heure'
+
+  if (minutes > 0) {
+    return `${sign}${hours} ${hoursLabel} et ${minutes} ${minutesLabel}`
+  } else {
+    return `${sign}${hours} ${hoursLabel}`
+  }
 }
 
 function convertDateObjToSeconds (timeObj) {
@@ -470,6 +696,20 @@ class DateConsts {
     })
   }
 
+  static getBeginningLunchBreakTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.get(SettingsKeys.TIME_BEGINNING_LUNCH_BREAK_HOURS),
+      minutes: Settings.get(SettingsKeys.TIME_BEGINNING_LUNCH_BREAK_MINUTES)
+    })
+  }
+
+  static getEndingLunchBreakTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.get(SettingsKeys.TIME_ENDING_LUNCH_BREAK_HOURS),
+      minutes: Settings.get(SettingsKeys.TIME_ENDING_LUNCH_BREAK_MINUTES)
+    })
+  }
+
   static getMorningBreakTime () {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_MORNING_BREAK_HOURS),
@@ -500,23 +740,23 @@ class DateConsts {
 
   static getDailyRequiredTime () {
     return convertDateObjToSeconds({
-      hours: getDailyRequiredHours(),
-      minutes: getDailyRequiredMinutes()
+      hours: DateConsts.getDailyRequiredHours(),
+      minutes: DateConsts.getDailyRequiredMinutes()
     })
   }
 
   static getWeeklyRequiredHours () {
-    return getDailyRequiredHours() * DateUtils.WORKDAY_COUNT
+    return DateConsts.getDailyRequiredHours() * DateUtils.WORKDAY_COUNT
   }
 
   static getWeeklyRequiredMinutes () {
-    return getDailyRequiredMinutes() * DateUtils.WORKDAY_COUNT
+    return DateConsts.getDailyRequiredMinutes() * DateUtils.WORKDAY_COUNT
   }
 
   static getWeeklyRequiredTime () {
     return convertDateObjToSeconds({
-      hours: getWeeklyRequiredHours(),
-      minutes: getWeeklyRequiredMinutes()
+      hours: DateConsts.getWeeklyRequiredHours(),
+      minutes: DateConsts.getWeeklyRequiredMinutes()
     })
   }
 
@@ -547,6 +787,13 @@ class DateConsts {
     })
   }
 
+  static getMaximumBeginningLunchTime () {
+    return (
+      DateConsts.getEndingLunchBreakTime() -
+      DateConsts.getMinimumLunchBreakTime()
+    )
+  }
+
   static getRecommendedEndingWorkingTime () {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_HOURS),
@@ -557,24 +804,24 @@ class DateConsts {
   }
 
   static getRecommendedLunchBreakTime () {
-    return convertDateObjToSeconds({
-      hours: Settings.get(SettingsKeys.TIME_RECOMMENDED_LUNCH_BREAK_HOURS),
-      minutes: Settings.get(SettingsKeys.TIME_RECOMMENDED_LUNCH_BREAK_MINUTES)
-    })
+    return (
+      DateConsts.getRecommendedEndingLunchTime() -
+      DateConsts.getRecommendedBeginningLunchTime()
+    )
   }
 
   static getWeekHours () {
-    return DateUtils.WORKDAY_COUNT * getDailyRequiredHours()
+    return DateUtils.WORKDAY_COUNT * DateConsts.getDailyRequiredHours()
   }
 
   static getWeekMinutes () {
-    return DateUtils.WORKDAY_COUNT * getDailyRequiredMinutes()
+    return DateUtils.WORKDAY_COUNT * DateConsts.getDailyRequiredMinutes()
   }
 
   static getWeekTime () {
     return convertDateObjToSeconds({
-      hours: getWeekHours(),
-      minutes: getWeekMinutes()
+      hours: DateConsts.getWeekHours(),
+      minutes: DateConsts.getWeekMinutes()
     })
   }
 
