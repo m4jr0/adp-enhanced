@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      0.9.15
+// @version      1.0.0
 // @description  Enhance ADP
 // @author       m4jr0
 // @match        https://mon.adp.com/redbox/*/
