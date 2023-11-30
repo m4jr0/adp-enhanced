@@ -181,14 +181,21 @@ class TimePair {
       if (this.previousPair.isMorning() && this.isAfternoon()) {
         AdpData.days[this.dayIndex].afternoonBeginningPair = this
 
+        const normalizedPreviousTo = convertDateToSeconds(
+          stripYearMonthAndDay(TimePair.getNormalized(this.previousPair.id).to)
+        )
+
         const delta =
           convertDateToSeconds(stripYearMonthAndDay(this.from)) -
-          convertDateToSeconds(stripYearMonthAndDay(this.previousPair.to)) -
+          normalizedPreviousTo -
           DateConsts.getMinimumLunchBreakTime()
 
         if (delta < 0) {
           this.from = stripHoursMinutesSecondsAndMilliseconds(this.from)
-          shiftDateWithSeconds(this.from, DateConsts.getEndingLunchBreakTime())
+          shiftDateWithSeconds(
+            this.from,
+            normalizedPreviousTo + DateConsts.getMinimumLunchBreakTime()
+          )
         }
       }
     }
