@@ -84,11 +84,7 @@ class TimePair {
     }
   }
 
-  getLabel (isHtml) {
-    if (this.from === null) {
-      return '???'
-    }
-
+  getDeltaLabel (isHtml) {
     const arrow = isHtml ? ' <span class="time-arrow">→</span> ' : ' → '
     let label = `${getHoursMinutesLabel(this.from)} ${arrow} `
 
@@ -97,6 +93,16 @@ class TimePair {
     } else {
       label += getHoursMinutesLabel(this.to)
     }
+
+    return label
+  }
+
+  getLabel (isHtml) {
+    if (this.from === null) {
+      return '???'
+    }
+
+    let label = this.getDeltaLabel(isHtml)
 
     if (isHtml) {
       label = `<div class="time-pair-element"><span class="time-bullet">·</span> ${label}</div>`
@@ -204,26 +210,24 @@ class TimePair {
       this.to = copyOrGenerateDate(this.from)
     }
 
-    if (this.from <= getNow()) {
-      if (this.isMorning()) {
-        AdpData.days[this.dayIndex].morningEndPair = this
-        const dayData = AdpData.days[this.dayIndex]
+    if (this.isMorning()) {
+      AdpData.days[this.dayIndex].morningEndPair = this
+      const dayData = AdpData.days[this.dayIndex]
 
-        if (dayData.remainingMorningBreakTime > 0) {
-          const delta = this.getDeltaInSeconds()
-          const toShift = Math.min(delta, dayData.remainingMorningBreakTime)
-          dayData.remainingMorningBreakTime -= toShift
-          shiftDateWithSeconds(this.from, toShift)
-        }
-      } else if (this.isAfternoon()) {
-        const dayData = AdpData.days[this.dayIndex]
+      if (dayData.remainingMorningBreakTime > 0) {
+        const delta = this.getDeltaInSeconds()
+        const toShift = Math.min(delta, dayData.remainingMorningBreakTime)
+        dayData.remainingMorningBreakTime -= toShift
+        shiftDateWithSeconds(this.from, toShift)
+      }
+    } else if (this.isAfternoon()) {
+      const dayData = AdpData.days[this.dayIndex]
 
-        if (dayData.remainingAfternoonBreakTime > 0) {
-          const delta = this.getDeltaInSeconds()
-          const toShift = Math.min(delta, dayData.remainingAfternoonBreakTime)
-          dayData.remainingAfternoonBreakTime -= toShift
-          shiftDateWithSeconds(this.from, toShift)
-        }
+      if (dayData.remainingAfternoonBreakTime > 0) {
+        const delta = this.getDeltaInSeconds()
+        const toShift = Math.min(delta, dayData.remainingAfternoonBreakTime)
+        dayData.remainingAfternoonBreakTime -= toShift
+        shiftDateWithSeconds(this.from, toShift)
       }
     }
   }
@@ -258,7 +262,7 @@ class TimePair {
   }
 
   getNormalizedCopy () {
-    const newPair = new TimePair(this.dayIndex, this.previousPair, this)
+    const newPair = new this.constructor(this.dayIndex, this.previousPair, this)
     // Make deep copies.
     newPair.from = this.from === null ? null : copyOrGenerateDate(this.from)
     newPair.to = this.to === null ? null : copyOrGenerateDate(this.to)
@@ -270,6 +274,34 @@ class TimePair {
 
   toString () {
     return `${this.constructor.name}: [${this.getLabel()}]`
+  }
+}
+
+class ESCWorkTimePair extends TimePair {
+  isActive () {
+    return false
+  }
+
+  getDeltaLabel (isHtml) {
+    let delta = 0
+
+    if (this.from !== null) {
+      delta += convertDateToSeconds(stripYearMonthAndDay(this.from))
+    }
+
+    if (this.to !== null) {
+      delta += convertDateToSeconds(stripYearMonthAndDay(this.to))
+    }
+
+    return getTimeSimpleDeltaLabel(delta)
+  }
+
+  getDeltaInSeconds () {
+    return 0
+  }
+
+  normalize () {
+    TimePair.normalizedPairs_[this.id] = this
   }
 }
 
@@ -557,12 +589,32 @@ function getRecommendedAfternoonTimePair (
   return pair
 }
 
+function getESCWorkTimePair (dayIndex, duration, description = null) {
+  const pair = new ESCWorkTimePair(dayIndex)
+  pair.push(duration)
+  pair.description = description
+  return pair
+}
+
 function getDayLabelFromDate (date) {
   return getDayLabelFromDayIndex(getDayIndexFromDate(date))
 }
 
 function parseAdpTime (adpTime) {
   const [hours, minutes] = adpTime.split(':').map(Number)
+  const date = getNow()
+  date.setHours(hours, minutes, 0, 0)
+  return date
+}
+
+function parseAdpTime2 (adpTime) {
+  var durationRegex =
+    /^P(?:([0-9]+)Y)?(?:([0-9]+)M)?(?:([0-9]+)D)?T?(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?$/
+  var matches = adpTime.match(durationRegex)
+
+  var hours = parseInt(matches[4]) || 0
+  var minutes = parseInt(matches[5]) || 0
+
   const date = getNow()
   date.setHours(hours, minutes, 0, 0)
   return date
@@ -658,6 +710,45 @@ function convertDateObjToSeconds (timeObj) {
   }
 
   return seconds
+}
+
+function getNormalizedDaytimeObj (hours, minutes) {
+  if (isNaN(hours)) {
+    hours = 0
+  }
+
+  if (isNaN(minutes)) {
+    minutes = 0
+  }
+
+  hours +=
+    Math.sign(minutes) *
+    (Math.floor(Math.abs(minutes) / 60) + (minutes < 0 ? 1 : 0))
+
+  if (hours > 23) {
+    hours %= 24
+  } else if (hours < 0) {
+    hours += (Math.floor(Math.abs(hours) / 24) + 1) * 24
+  }
+
+  if (minutes > 59) {
+    minutes %= 60
+  } else if (minutes < 0) {
+    minutes += (Math.floor(Math.abs(minutes) / 60) + 1) * 60
+  }
+
+  return {
+    hours: hours,
+    minutes: minutes
+  }
+}
+
+function getNormalizedDaytimeString (hours, minutes) {
+  const normalizedDaytimeObj = getNormalizedDaytimeObj(hours, minutes)
+  const normalizedHours = `0${normalizedDaytimeObj.hours}`.slice(-2)
+  const normalizedMinutes = `0${normalizedDaytimeObj.minutes}`.slice(-2)
+
+  return `${normalizedHours}:${normalizedMinutes}`
 }
 
 class DateConsts {

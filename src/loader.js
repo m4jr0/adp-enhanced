@@ -125,7 +125,8 @@ async function load () {
 
   displayExpectedHoursCheckbox.dispatchEvent(event)
   await sleep(Loader.SCRIPT_LOAD_SLEEP_IN_MILLISECONDS)
-  displayExpectedHoursCheckbox.parentElement.innerHTML = `<span id="adp-title">${Global.ADP_APP_NAME}</span> <span id="adp-version">v${Global.ADP_ENHANCED_VERSION}</span>`
+  displayExpectedHoursCheckbox.parentElement.innerHTML = `<a id="adp-settings-btn" href="#">
+  <i id="adp-settings-icon" class="fa fa-cog"></i></a> <span id="adp-title">${Global.ADP_APP_NAME}</span> <span id="adp-version">v${Global.ADP_ENHANCED_VERSION}</span>`
 
   try {
     await waitForElement(
@@ -142,6 +143,7 @@ async function load () {
 
   try {
     await setup()
+    setupSettings()
     loadIntro()
   } catch (error) {
     if (Global.IS_DEBUG) {

@@ -113,7 +113,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times monday-times" id="monday-details">
+                      <div class="ng-isolate-scope day-details" id="monday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -144,7 +144,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times tuesday-times" id="tuesday-details">
+                      <div class="ng-isolate-scope day-details" id="tuesday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -175,7 +175,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times wednesday-times" id="wednesday-details">
+                      <div class="ng-isolate-scope day-details" id="wednesday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -206,7 +206,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times thursday-times" id="thursday-details">
+                      <div class="ng-isolate-scope day-details" id="thursday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -237,7 +237,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times friday-times" id="friday-details">
+                      <div class="ng-isolate-scope day-details" id="friday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -268,7 +268,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times saturday-times" id="saturday-details">
+                      <div class="ng-isolate-scope day-details" id="saturday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -299,7 +299,7 @@ function getViewHtml () {
                   </div>
                   <div class="row cell-content-details ng-scope">
                     <timecard-calendar-view-see-details class="ng-scope ng-isolate-scope">
-                      <div class="ng-isolate-scope day-details day-times sunday-times" id="sunday-details">
+                      <div class="ng-isolate-scope day-details" id="sunday-details">
                       </div>
                     </timecard-calendar-view-see-details>
                   </div>
@@ -397,27 +397,29 @@ async function setup () {
     monthDayEl.innerHTML = AdpData.getDayDate(dayIndex).getDate()
     const timePairsEl = document.querySelector(`#${dayLabel}-details`)
     const dayData = AdpData.days[dayIndex]
-    timePairsEl.innerHTML =
-      '<p class="day-details-title day-details-title-first">Pointage</p>'
+    let timePairsElHtml =
+      '<div class="time-logging"><p class="day-details-title day-details-title-first">Pointage</p>'
 
     if (dayData.timePairs.length > 0) {
       dayData.timePairs.forEach((timePair, index) => {
-        timePairsEl.innerHTML += timePair.getLabel(true)
+        timePairsElHtml += timePair.getLabel(true)
       })
     } else {
-      timePairsEl.innerHTML += getNoTimePairEl()
+      timePairsElHtml += getNoTimePairEl()
     }
 
-    timePairsEl.innerHTML += '<hr class="time-separator">'
-    timePairsEl.innerHTML += '<p class="day-details-title">Événements</p>'
+    timePairsElHtml += '</div><hr class="time-separator">'
+    timePairsElHtml += '<p class="day-details-title">Événements</p>'
 
     if (dayData.specialTimePairs.length > 0) {
       dayData.specialTimePairs.forEach((timePair, index) => {
-        timePairsEl.innerHTML += timePair.getLabel(true)
+        timePairsElHtml += timePair.getLabel(true)
       })
     } else {
-      timePairsEl.innerHTML += getNoTimePairEl()
+      timePairsElHtml += getNoTimePairEl()
     }
+
+    timePairsEl.innerHTML = timePairsElHtml
 
     let beginningExtraTimesEl = document.querySelector('#beginning-extra-time')
     beginningExtraTimesEl.innerHTML = getTimeSimpleDeltaLabel(
@@ -482,6 +484,62 @@ function setCalendarTimes (calendarEntries) {
 
       if (!pair.isEmpty()) {
         dayData.timePairs.push(pair)
+      }
+    }
+
+    const hoursSummaries = entry.entryDetail[0].hoursSummary
+
+    if (hoursSummaries !== undefined) {
+      for (const hoursSummary of hoursSummaries) {
+        try {
+          const codeName = hoursSummary.codeName
+
+          if (!isSpecificTimePair(codeName)) {
+            continue
+          }
+
+          const dayPeriodValue = hoursSummary.hoursValue
+          const isMorning = dayPeriodValue === 'M' || dayPeriodValue === 'J'
+          const isAfternoon = dayPeriodValue === 'A' || dayPeriodValue === 'J'
+          let morningPair = null
+
+          if (isMorning) {
+            morningPair = getRecommendedMorningTimePair(
+              dayData.date,
+              getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+            )
+
+            dayData.specialTimePairs.push(morningPair)
+          }
+
+          if (isAfternoon) {
+            dayData.specialTimePairs.push(
+              getRecommendedAfternoonTimePair(
+                dayData.date,
+                morningPair,
+                getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+              )
+            )
+          }
+
+          if (!isMorning && !isAfternoon) {
+            const duration = parseAdpTime2(dayPeriodValue)
+
+            dayData.specialTimePairs.push(
+              getESCWorkTimePair(
+                dayData.index,
+                duration,
+                getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+              )
+            )
+          }
+        } catch (error) {
+          // Ignore error for this specific case (we are not sure if all cases are handled correctly).
+          log(
+            `Error while trying to parse specific time pair: ${error}`,
+            Log.Error
+          )
+        }
       }
     }
 
@@ -617,6 +675,12 @@ function display () {
     const dayTimeEls = document.querySelectorAll('.day-times')
 
     dayTimeEls.forEach(dayTimeEl => {
+      dayTimeEl.style.display = 'none'
+    })
+
+    const timeLoggingEls = document.querySelectorAll('.time-logging')
+
+    timeLoggingEls.forEach(dayTimeEl => {
       dayTimeEl.style.display = 'none'
     })
   } else {

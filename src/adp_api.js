@@ -247,6 +247,10 @@ function isSpecificTimePair (codeName) {
     return true
   }
 
+  if (codeName === 'ZVI') {
+    return true
+  }
+
   return false
 }
 
@@ -265,6 +269,8 @@ function getTimePairDescriptionFromAdp (codeName, dayPeriodValue = null) {
     description = 'Télétravail'
   } else if (codeName === 'NM') {
     description = 'Mise à pied'
+  } else if (codeName === 'ZVI') {
+    description = 'Temps de travail pour le CSE'
   } else {
     description = 'Inconnu'
   }

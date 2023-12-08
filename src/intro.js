@@ -2,7 +2,8 @@ class Intro {
   static STEP_DATA = [
     { version: '0.0.1', stepsFunc: get0dot0dot1 },
     { version: '0.9.4', stepsFunc: get0dot9dot4 },
-    { version: '0.9.10', stepsFunc: get0dot9dot10 }
+    { version: '0.9.10', stepsFunc: get0dot9dot10 },
+    { version: '1.1.1', stepsFunc: get1dot1dot1 }
   ]
 }
 
@@ -111,6 +112,18 @@ function get0dot9dot10 () {
       intro: `Utile pour savoir si vous gagnez ou perdez du temps sur vos 35 heures !`,
       position: 'top',
       priority: 1
+    }
+  ]
+}
+
+function get1dot1dot1 () {
+  return [
+    {
+      element: document.querySelector('#adp-settings-icon'),
+      title: 'Paramètres',
+      intro: `Vous ne souhaitez prendre qu'une heure de pause le midi ? Ou encore arriver plus tard le matin ? C'est ici que vous personnalisez votre expérience ${Global.ADP_APP_NAME}!`,
+      position: 'top',
+      priority: 998
     }
   ]
 }

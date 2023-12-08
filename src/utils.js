@@ -60,3 +60,27 @@ function sortArrayOfObjects (array, keys) {
     return 0
   })
 }
+
+function insertTextToString (baseString, stringToInsert, index = 0) {
+  return `${baseString.slice(0, index)}${stringToInsert}${baseString.slice(
+    index
+  )}`
+}
+
+function cleanNonDigits (string) {
+  return string.replace(/[^0-9]/i, '')
+}
+
+function parseIntOrGetDefault (rawInt, defaultValue = 0) {
+  const result = parseInt(rawInt)
+
+  if (isNaN(result)) {
+    return defaultValue
+  }
+
+  return result
+}
+
+function getRandomNumber (min, max) {
+  return Math.random() * (max - min) + min
+}

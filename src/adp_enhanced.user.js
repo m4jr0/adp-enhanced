@@ -3,7 +3,7 @@
 // @namespace    https://github.com/m4jr0/adp-enhanced
 // @downloadURL  https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
 // @updateURL    https://raw.githubusercontent.com/m4jr0/adp-enhanced/master/src/adp_enhanced.user.js
-// @version      1.1.0
+// @version      1.1.2
 // @description  Enhance ADP
 // @author       m4jr0
 // @match        https://mon.adp.com/redbox/*/
@@ -14,6 +14,7 @@
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/utils.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/date_utils.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/dom_utils.js
+// @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/input.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/settings.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/adp_api.js
 // @require      https://github.com/m4jr0/adp-enhanced/raw/master/src/css.js
