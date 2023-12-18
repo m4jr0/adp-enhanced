@@ -305,6 +305,34 @@ class ESCWorkTimePair extends TimePair {
   }
 }
 
+class LeaveTimePair extends TimePair {
+  isActive () {
+    return false
+  }
+
+  getDeltaLabel (isHtml) {
+    return getTimeSimpleDeltaLabel(this.getDeltaInSeconds())
+  }
+
+  getDeltaInSeconds () {
+    let delta = 0
+
+    if (this.from !== null) {
+      delta += convertDateToSeconds(stripYearMonthAndDay(this.from))
+    }
+
+    if (this.to !== null) {
+      delta += convertDateToSeconds(stripYearMonthAndDay(this.to))
+    }
+
+    return delta
+  }
+
+  normalize () {
+    TimePair.normalizedPairs_[this.id] = this
+  }
+}
+
 function getNow (isYearMonthAndDayStrip = false, isRealNowForced = false) {
   let realNow = stripMilliseconds(new Date())
   let now = null
@@ -436,6 +464,16 @@ function convertDateToSeconds (date, isUtc = true) {
   return Math.ceil(milliseconds / 1000)
 }
 
+function convertSecondsToDate (seconds, isUtc = true) {
+  const date = new Date(seconds * 1000)
+
+  if (isUtc) {
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset())
+  }
+
+  return date
+}
+
 function getDateHoursMinutesFromSeconds (date, seconds) {
   date = new copyOrGenerateDate(date)
 
@@ -551,47 +589,46 @@ function getDayIndexFromDate (date) {
   return day - 1
 }
 
-function getRecommendedMorningTimePair (anchorDate, description = null) {
-  const beginningDate = copyOrGenerateDate(anchorDate)
-  shiftDateWithSeconds(
-    beginningDate,
-    DateConsts.getRecommendedBeginningWorkingTime()
+function getLeaveMorningTimePair (codeName, dayIndex, description = null) {
+  return getCustomLeaveTimePair(
+    codeName,
+    dayIndex,
+    getMorningTimeFromCodeName(codeName),
+    description
   )
-
-  const endDate = copyOrGenerateDate(anchorDate)
-  shiftDateWithSeconds(endDate, DateConsts.getRecommendedBeginningLunchTime())
-
-  const pair = new TimePair(getDayIndexFromDate(anchorDate), null)
-  pair.push(beginningDate)
-  pair.push(endDate)
-  pair.description = description
-  return pair
 }
 
-function getRecommendedAfternoonTimePair (
-  anchorDate,
-  previousPair,
+function getLeaveAfternoonTimePair (codeName, dayIndex, description = null) {
+  return getCustomLeaveTimePair(
+    codeName,
+    dayIndex,
+    getAfternoonTimeFromCodeName(codeName),
+    description
+  )
+}
+
+function getLeaveDayTimePair (codeName, dayIndex, description = null) {
+  return getCustomLeaveTimePair(
+    codeName,
+    dayIndex,
+    getDayTimeFromCodeName(codeName),
+    description
+  )
+}
+
+function getCustomLeaveTimePair (
+  codeName,
+  dayIndex,
+  duration,
   description = null
 ) {
-  const beginningDate = copyOrGenerateDate(anchorDate)
-  shiftDateWithSeconds(
-    beginningDate,
-    DateConsts.getRecommendedEndingLunchTime()
-  )
+  const constructor =
+    codeName === 'ZVI'
+      ? ESCWorkTimePair.prototype.constructor
+      : LeaveTimePair.prototype.constructor
 
-  const endDate = copyOrGenerateDate(anchorDate)
-  shiftDateWithSeconds(endDate, DateConsts.getRecommendedEndingWorkingTime())
-
-  const pair = new TimePair(getDayIndexFromDate(anchorDate), previousPair)
-  pair.push(beginningDate)
-  pair.push(endDate)
-  pair.description = description
-  return pair
-}
-
-function getESCWorkTimePair (dayIndex, duration, description = null) {
-  const pair = new ESCWorkTimePair(dayIndex)
-  pair.push(duration)
+  const pair = new constructor(dayIndex)
+  pair.push(convertSecondsToDate(duration))
   pair.description = description
   return pair
 }
@@ -758,11 +795,24 @@ class DateConsts {
       minutes: Settings.get(SettingsKeys.TIME_MORNING_MINUTES)
     })
   }
+  static getDefaultMorningTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(SettingsKeys.TIME_MORNING_HOURS),
+      minutes: Settings.getDefault(SettingsKeys.TIME_MORNING_MINUTES)
+    })
+  }
 
   static getAfternoonTime () {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_AFTERNOON_HOURS),
       minutes: Settings.get(SettingsKeys.TIME_AFTERNOON_MINUTES)
+    })
+  }
+
+  static getDefaultAfternoonTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(SettingsKeys.TIME_AFTERNOON_HOURS),
+      minutes: Settings.getDefault(SettingsKeys.TIME_AFTERNOON_MINUTES)
     })
   }
 
@@ -815,10 +865,24 @@ class DateConsts {
     })
   }
 
+  static getDefaultMorningBreakTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(SettingsKeys.TIME_MORNING_BREAK_HOURS),
+      minutes: Settings.getDefault(SettingsKeys.TIME_MORNING_BREAK_MINUTES)
+    })
+  }
+
   static getAfternoonBreakTime () {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_AFTERNOON_BREAK_HOURS),
       minutes: Settings.get(SettingsKeys.TIME_AFTERNOON_BREAK_MINUTES)
+    })
+  }
+
+  static getDefaultAfternoonBreakTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(SettingsKeys.TIME_AFTERNOON_BREAK_HOURS),
+      minutes: Settings.getDefault(SettingsKeys.TIME_AFTERNOON_BREAK_MINUTES)
     })
   }
 
@@ -869,6 +933,17 @@ class DateConsts {
     })
   }
 
+  static getDefaultRecommendedBeginningWorkingTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_BEGINNING_WORKING_HOURS
+      ),
+      minutes: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_BEGINNING_WORKING_MINUTES
+      )
+    })
+  }
+
   static getRecommendedBeginningLunchTime () {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_RECOMMENDED_BEGINNING_LUNCH_HOURS),
@@ -878,10 +953,32 @@ class DateConsts {
     })
   }
 
+  static getDefaultRecommendedBeginningLunchTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_BEGINNING_LUNCH_HOURS
+      ),
+      minutes: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_BEGINNING_LUNCH_MINUTES
+      )
+    })
+  }
+
   static getRecommendedEndingLunchTime () {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_RECOMMENDED_ENDING_LUNCH_HOURS),
       minutes: Settings.get(SettingsKeys.TIME_RECOMMENDED_ENDING_LUNCH_MINUTES)
+    })
+  }
+
+  static getDefaultRecommendedEndingLunchTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_ENDING_LUNCH_HOURS
+      ),
+      minutes: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_ENDING_LUNCH_MINUTES
+      )
     })
   }
 
@@ -896,6 +993,17 @@ class DateConsts {
     return convertDateObjToSeconds({
       hours: Settings.get(SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_HOURS),
       minutes: Settings.get(
+        SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_MINUTES
+      )
+    })
+  }
+
+  static getDefaultRecommendedEndingWorkingTime () {
+    return convertDateObjToSeconds({
+      hours: Settings.getDefault(
+        SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_HOURS
+      ),
+      minutes: Settings.getDefault(
         SettingsKeys.TIME_RECOMMENDED_ENDING_WORKING_MINUTES
       )
     })

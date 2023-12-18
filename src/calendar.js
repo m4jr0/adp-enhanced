@@ -492,47 +492,17 @@ function setCalendarTimes (calendarEntries) {
     if (hoursSummaries !== undefined) {
       for (const hoursSummary of hoursSummaries) {
         try {
-          const codeName = hoursSummary.codeName
+          const specialPair = getResolvedTimePair(
+            dayData,
+            hoursSummary.codeName,
+            hoursSummary.hoursValue
+          )
 
-          if (!isSpecificTimePair(codeName)) {
+          if (specialPair === null) {
             continue
           }
 
-          const dayPeriodValue = hoursSummary.hoursValue
-          const isMorning = dayPeriodValue === 'M' || dayPeriodValue === 'J'
-          const isAfternoon = dayPeriodValue === 'A' || dayPeriodValue === 'J'
-          let morningPair = null
-
-          if (isMorning) {
-            morningPair = getRecommendedMorningTimePair(
-              dayData.date,
-              getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
-            )
-
-            dayData.specialTimePairs.push(morningPair)
-          }
-
-          if (isAfternoon) {
-            dayData.specialTimePairs.push(
-              getRecommendedAfternoonTimePair(
-                dayData.date,
-                morningPair,
-                getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
-              )
-            )
-          }
-
-          if (!isMorning && !isAfternoon) {
-            const duration = parseAdpTime2(dayPeriodValue)
-
-            dayData.specialTimePairs.push(
-              getESCWorkTimePair(
-                dayData.index,
-                duration,
-                getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
-              )
-            )
-          }
+          dayData.specialTimePairs.push(specialPair)
         } catch (error) {
           // Ignore error for this specific case (we are not sure if all cases are handled correctly).
           log(
@@ -551,35 +521,17 @@ function setCalendarTimes (calendarEntries) {
 
     for (const dayPeriodSummary of dayPeriodSummaries) {
       try {
-        const codeName = dayPeriodSummary.codeName
+        const specialPair = getResolvedTimePair(
+          dayData,
+          dayPeriodSummary.codeName,
+          dayPeriodSummary.dayPeriodValue
+        )
 
-        if (!isSpecificTimePair(codeName)) {
+        if (specialPair === null) {
           continue
         }
 
-        const dayPeriodValue = dayPeriodSummary.dayPeriodValue
-        const isMorning = dayPeriodValue === 'M' || dayPeriodValue === 'J'
-        const isAfternoon = dayPeriodValue === 'A' || dayPeriodValue === 'J'
-        let morningPair = null
-
-        if (isMorning) {
-          morningPair = getRecommendedMorningTimePair(
-            dayData.date,
-            getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
-          )
-
-          dayData.specialTimePairs.push(morningPair)
-        }
-
-        if (isAfternoon) {
-          dayData.specialTimePairs.push(
-            getRecommendedAfternoonTimePair(
-              dayData.date,
-              morningPair,
-              getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
-            )
-          )
-        }
+        dayData.specialTimePairs.push(specialPair)
       } catch (error) {
         // Ignore error for this specific case (we are not sure if all cases are handled correctly).
         log(
@@ -603,7 +555,7 @@ function setCalendarEvents (calendarEvents) {
     const date = copyOrGenerateDate(startTime)
     const dayIndex = getDayIndexFromDate(date)
     const dayData = AdpData.days[dayIndex]
-    const morningPair = getRecommendedMorningTimePair(
+    const morningPair = getLeaveMorningTimePair(
       dayData.date,
       'Jour férié (matin)'
     )
@@ -611,7 +563,7 @@ function setCalendarEvents (calendarEvents) {
     dayData.specialTimePairs.push(morningPair)
 
     dayData.specialTimePairs.push(
-      getRecommendedAfternoonTimePair(
+      getLeaveAfternoonTimePair(
         dayData.date,
         morningPair,
         'Jour férié (après-midi)'

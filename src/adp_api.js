@@ -254,6 +254,57 @@ function isSpecificTimePair (codeName) {
   return false
 }
 
+function getMorningTimeFromCodeName (codeName) {
+  if (codeName === 'RV') {
+    return (
+      DateConsts.getDefaultRecommendedBeginningLunchTime() -
+      DateConsts.getDefaultRecommendedBeginningWorkingTime() -
+      DateConsts.getDefaultMorningBreakTime()
+    )
+  }
+
+  if (
+    codeName === 'CP' ||
+    codeName === 'CS' ||
+    codeName === 'MA' ||
+    codeName === 'EF' ||
+    codeName === 'NM'
+  ) {
+    return DateConsts.getDefaultMorningTime()
+  }
+
+  return 0
+}
+
+function getAfternoonTimeFromCodeName (codeName) {
+  if (codeName === 'RV') {
+    return (
+      DateConsts.getDefaultRecommendedEndingWorkingTime() -
+      DateConsts.getDefaultRecommendedEndingLunchTime() -
+      DateConsts.getDefaultAfternoonBreakTime()
+    )
+  }
+
+  if (
+    codeName === 'CP' ||
+    codeName === 'CS' ||
+    codeName === 'MA' ||
+    codeName === 'EF' ||
+    codeName === 'NM'
+  ) {
+    return DateConsts.getDefaultAfternoonTime()
+  }
+
+  return 0
+}
+
+function getDayTimeFromCodeName (codeName) {
+  return (
+    getMorningTimeFromCodeName(codeName) +
+    getAfternoonTimeFromCodeName(codeName)
+  )
+}
+
 function getTimePairDescriptionFromAdp (codeName, dayPeriodValue = null) {
   let description = ''
 
@@ -284,4 +335,46 @@ function getTimePairDescriptionFromAdp (codeName, dayPeriodValue = null) {
   }
 
   return description
+}
+
+function getResolvedTimePair (dayData, codeName, dayPeriodValue) {
+  if (!isSpecificTimePair(codeName)) {
+    return null
+  }
+
+  const isMorning = dayPeriodValue === 'M'
+  const isAfternoon = dayPeriodValue === 'A'
+  const isDay = dayPeriodValue === 'J'
+
+  switch (dayPeriodValue) {
+    case 'M':
+      return getLeaveMorningTimePair(
+        codeName,
+        dayData.index,
+        getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+      )
+
+    case 'A':
+      return getLeaveAfternoonTimePair(
+        codeName,
+        dayData.index,
+        getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+      )
+
+    case 'J':
+      return getLeaveDayTimePair(
+        codeName,
+        dayData.index,
+        getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+      )
+  }
+
+  const duration = convertDateToSeconds(parseAdpTime2(dayPeriodValue))
+
+  return getCustomLeaveTimePair(
+    codeName,
+    dayData.index,
+    duration,
+    getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
+  )
 }
