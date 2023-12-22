@@ -3,7 +3,8 @@ class Intro {
     { version: '0.0.1', stepsFunc: get0dot0dot1 },
     { version: '0.9.4', stepsFunc: get0dot9dot4 },
     { version: '0.9.10', stepsFunc: get0dot9dot10 },
-    { version: '1.1.1', stepsFunc: get1dot1dot1 }
+    { version: '1.1.1', stepsFunc: get1dot1dot1 },
+    { version: '1.2.1', stepsFunc: get1dot2dot1 }
   ]
 }
 
@@ -38,8 +39,8 @@ function get0dot0dot1 () {
     },
     {
       element: document.querySelector('#beginning-extra-time'),
-      title: 'Heures supplémentaires',
-      intro: `Vos heures supplémentaires (qui sont directement données par ADP) sont visibles ici.`,
+      title: 'Heures supplémentaires au début de semaine',
+      intro: `Vos heures supplémentaires du début de la semaine (qui sont directement données par ADP) sont visibles ici.`,
       position: 'top',
       priority: 1
     },
@@ -48,7 +49,7 @@ function get0dot0dot1 () {
       title: 'Pointage & événements',
       intro: `Le détail de la journée est divisé entre vos heures pointées et les événements (jours fériés, etc.). Survolez le point d'interrogation à droite d'une paire horaire pour connaître sa nature.`,
       position: 'top',
-      priority: 1
+      priority: 4
     },
     {
       title: "En cas d'erreur...",
@@ -87,14 +88,14 @@ function get0dot9dot4 () {
       title: 'Horaires de départ conseillés',
       intro: `Ici sont affichés les horaires conseillés pour finir votre journée. Survolez le point d'interrogation pour avoir plus de détails.`,
       position: 'top',
-      priority: 2
+      priority: 3
     }
   ]
 }
 
 function get0dot9dot10 () {
   const getValidPredictionEl = () => {
-    const els = document.querySelectorAll('.cumulated-daily-delta')
+    const els = document.querySelectorAll('.cumulated-weekly-delta')
     let selectedEl = els.length > 0 ? els[0] : null
 
     if (selectedEl === null) {
@@ -111,7 +112,7 @@ function get0dot9dot10 () {
       title: 'Delta cumulé sur la semaine',
       intro: `Utile pour savoir si vous gagnez ou perdez du temps sur vos 35 heures !`,
       position: 'top',
-      priority: 1
+      priority: 2
     }
   ]
 }
@@ -124,6 +125,18 @@ function get1dot1dot1 () {
       intro: `Vous ne souhaitez prendre qu'une heure de pause le midi ? Ou encore arriver plus tard le matin ? C'est ici que vous personnalisez votre expérience ${Global.ADP_APP_NAME}!`,
       position: 'top',
       priority: 998
+    }
+  ]
+}
+
+function get1dot2dot1 () {
+  return [
+    {
+      element: document.querySelector('#predicted-ending-extra-time'),
+      title: 'Estimation des heures supplémentaires',
+      intro: `Vos heures supplémentaires (estimées par ADP Enhanced) sont affichées ici. Il s'agit d'une estimation, et non d'un calcul définitif !`,
+      position: 'top',
+      priority: 2
     }
   ]
 }

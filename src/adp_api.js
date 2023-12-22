@@ -337,14 +337,18 @@ function getTimePairDescriptionFromAdp (codeName, dayPeriodValue = null) {
   return description
 }
 
+function getNationalHolidayPair (dayData) {
+  const pair = new LeaveTimePair(dayData.index)
+  pair.push(convertSecondsToDate(DateConsts.getDefaultDayTime()))
+  pair.description = 'Jour férié'
+  pair.isExtraTimeConsumed = false
+  return pair
+}
+
 function getResolvedTimePair (dayData, codeName, dayPeriodValue) {
   if (!isSpecificTimePair(codeName)) {
     return null
   }
-
-  const isMorning = dayPeriodValue === 'M'
-  const isAfternoon = dayPeriodValue === 'A'
-  const isDay = dayPeriodValue === 'J'
 
   switch (dayPeriodValue) {
     case 'M':
@@ -377,4 +381,12 @@ function getResolvedTimePair (dayData, codeName, dayPeriodValue) {
     duration,
     getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
   )
+}
+
+function isExtraTimeConsumed (codeName) {
+  if (codeName === 'RV') {
+    return true
+  }
+
+  return false
 }

@@ -52,7 +52,7 @@ function getNoTimePairEl () {
 }
 
 function handleModal (buttonEl, modalEl, closingCallback = null) {
-  modalEl.classList.add('enhanced-modal')
+  modalEl.classList.add('adp-enhanced-modal')
 
   buttonEl.addEventListener('click', event => {
     event.preventDefault()
@@ -76,7 +76,7 @@ function handleModal (buttonEl, modalEl, closingCallback = null) {
     if (isVisible) {
       const overlay = document.createElement('div')
       overlay.id = `${modalEl.id}-overlay`
-      overlay.classList.add('enhanced-modal-overlay')
+      overlay.classList.add('adp-enhanced-modal-overlay')
       overlay.classList.add('show')
       document.body.appendChild(overlay)
       document.body.style.overflow = 'hidden'
@@ -96,32 +96,6 @@ function handleModal (buttonEl, modalEl, closingCallback = null) {
       document.body.style.overflow = 'initial'
     }
   })
-}
-
-function getHoursMinutesInput (
-  id = null,
-  value = null,
-  label = null,
-  onKeyUpCallback = null,
-  onFocusOutCallback = null
-) {
-  if (id !== null) {
-    if (onKeyUpCallback !== null) {
-      setHoursMinutesInputKeyUpCallback(id, onKeyUpCallback)
-    }
-
-    if (onFocusOutCallback !== null) {
-      setHoursMinutesInputFocusOutCallback(id, onFocusOutCallback)
-    }
-  }
-
-  value = value !== null ? `value="${value}"` : ''
-  const idAttr = id === null ? '' : `id="${id}"`
-  const labelEl =
-    id !== null && label !== null
-      ? `<label class="hours-minutes-input-label"  for="${id}">${label}</label>`
-      : ''
-  return `${labelEl}<input ${idAttr} class="hours-minutes-input vdl-textbox ng-touched ng-dirty ng-valid" type="text" placeholder="hh:mm" inputmode="text" ${value}>`
 }
 
 function shakeElement (element) {

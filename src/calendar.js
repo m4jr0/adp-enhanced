@@ -48,7 +48,7 @@ function getHeaderHtml () {
             </div>
             <div>
               <span class="week-date-range ng-binding">Fin (estimation)</span>
-              <span class="pull-right text-right week-total ng-binding" id="ending-extra-time">-</span>
+              <span class="pull-right text-right week-total ng-binding" id="predicted-ending-extra-time">-</span>
             </div>
           </div>
         </div>
@@ -420,14 +420,10 @@ async function setup () {
     }
 
     timePairsEl.innerHTML = timePairsElHtml
+  }
 
-    let beginningExtraTimesEl = document.querySelector('#beginning-extra-time')
-    beginningExtraTimesEl.innerHTML = getTimeSimpleDeltaLabel(
-      AdpData.beginningExtraTime
-    )
-
-    let endingExtraTimesEl = document.querySelector('#ending-extra-time')
-    endingExtraTimesEl.parentElement.style.display = 'none'
+  if (!AdpData.isFutureWeek()) {
+    displayExtraHours()
   }
 
   startRefresh()
@@ -456,6 +452,7 @@ function setCalendarTimes (calendarEntries) {
 
         if (isSpecificTimePair(codeName)) {
           const specificPair = new TimePair(dayIndex, null)
+          specificPair.isExtraTimeConsumed = isExtraTimeConsumed(codeName)
 
           const pairEndDate = stripMilliseconds(
             rawTimePair.timePeriod.endDateTime
@@ -555,20 +552,7 @@ function setCalendarEvents (calendarEvents) {
     const date = copyOrGenerateDate(startTime)
     const dayIndex = getDayIndexFromDate(date)
     const dayData = AdpData.days[dayIndex]
-    const morningPair = getLeaveMorningTimePair(
-      dayData.date,
-      'Jour férié (matin)'
-    )
-
-    dayData.specialTimePairs.push(morningPair)
-
-    dayData.specialTimePairs.push(
-      getLeaveAfternoonTimePair(
-        dayData.date,
-        morningPair,
-        'Jour férié (après-midi)'
-      )
-    )
+    dayData.specialTimePairs.push(getNationalHolidayPair(dayData))
   }
 }
 
@@ -672,10 +656,12 @@ function display () {
         document.querySelector(`#${dayLabel}-weekly-prediction`).innerHTML =
           generateLeavingTime(
             dayData.weeklyLeavingTime,
-            dayData.weeklyTimeLeft,
+            -dayData.cumulatedWeeklyDelta,
             isWorking,
             dayIndex === currentDayIndex
           )
+
+        displayExtraHours()
       }
 
       if (dayIndex > currentDayIndex) {
@@ -686,8 +672,8 @@ function display () {
       const dayTime = AdpData.getDayTime(dayIndex)
       dayTimeEl.innerHTML = `${getTimeSimpleDeltaLabel(
         dayTime
-      )} <span class="cumulated-daily-delta">${getTimeSimpleDeltaLabel(
-        dayData.cumulatedDailyDelta
+      )} <span class="cumulated-weekly-delta">${getTimeSimpleDeltaLabel(
+        dayData.cumulatedWeeklyDelta
       )}</span>`
 
       if (!isWorking || dayIndex !== currentDayIndex) {
@@ -724,6 +710,20 @@ function display () {
       dayTimeEl.style.display = 'none'
     })
   }
+}
+
+function displayExtraHours () {
+  let beginningExtraTimesEl = document.querySelector('#beginning-extra-time')
+  beginningExtraTimesEl.innerHTML = getTimeSimpleDeltaLabel(
+    AdpData.beginningExtraTime
+  )
+
+  let predictedEndingExtraTimesEl = document.querySelector(
+    '#predicted-ending-extra-time'
+  )
+  predictedEndingExtraTimesEl.innerHTML = getTimeSimpleDeltaLabel(
+    AdpData.predictedEndingExtraTime
+  )
 }
 
 function startRefresh () {

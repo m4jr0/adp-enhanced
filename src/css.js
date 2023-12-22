@@ -79,7 +79,7 @@ const CSS = `
   font-size: 30px !important;
 }
 
-.adp-settings-button-input {
+.adp-enhanced-button-input {
   background-color: var(--global-blue);
   border: none;
   border-radius: 8px;
@@ -93,14 +93,71 @@ const CSS = `
   transition: .2s;
 }
 
-.adp-settings-button-input:focus {
+.adp-enhanced-button-input:focus {
   background-color: var(--global-blue) !important;
   box-shadow: inset 0 0 0 2px var(--global-blue), inset 0 0 0 3px var(--global-white);
   outline: 0;
 }
 
-.adp-settings-button-input:hover {
+.adp-enhanced-button-input:hover {
   background-color: var(--global-emphasis);
+}
+
+.adp-enhanced-checkbox-input .switch {
+  bottom: 13px;
+  display: inline-block;
+  height: 28px;
+  position: relative;
+  transform: translateY(13px);
+  width: 50px;
+}
+
+.adp-enhanced-checkbox-input-label {
+  bottom: 14px;
+  margin-left: 5px;
+  position: relative;
+}
+
+.adp-enhanced-checkbox-input .switch input {
+  display: none;
+}
+
+.adp-enhanced-checkbox-input .slider {
+  background-color: var(--global-light-gray);
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+}
+
+.adp-enhanced-checkbox-input .slider:before {
+  background-color: var(--global-white);
+  bottom: 3px;
+  content: "";
+  height: 22px;
+  left: 3px;
+  position: absolute;
+  transition: .4s;
+  width: 22px;
+}
+
+.adp-enhanced-checkbox-input input:checked + .slider {
+  background-color: var(--global-blue);
+}
+
+.adp-enhanced-checkbox-input input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.adp-enhanced-checkbox-input .slider.round {
+  border-radius: 28px;
+}
+
+.adp-enhanced-checkbox-input .slider.round:before {
+  border-radius: 50%;
 }
 
 .adp-settings-button-input-help-icon {
@@ -142,6 +199,130 @@ const CSS = `
   transform: translate(calc(-100% - 7px), calc(-50% + 9px));
 }
 
+.adp-enhanced-hours-minutes-input {
+  border: 2px solid var(--global-light-gray);
+  border-radius: 5px;
+  display: inline;
+  font-size: 1em;
+  font-weight: initial;
+  height: 35px;
+  outline: none;
+  text-align: center;
+  transition: border 0.1s ease;
+  width: 75px;
+}
+
+.adp-enhanced-hours-minutes-input:focus {
+  border: 3px solid var(--global-emphasis);
+  outline: none;
+}
+
+.adp-enhanced-hours-minutes-input-label {
+  font-size: 0.9em;
+}
+
+.adp-enhanced-modal {
+  background-color: var(--global-white);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  left: 50%;
+  margin: 0px;
+  max-width: 400px;
+  min-width: 300px;
+  min-height: 100px;
+  opacity: 0;
+  padding: 20px;
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -100%);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  width: 100%;
+  z-index: -100000 !important;
+}
+
+.adp-enhanced-modal h1 {
+  text-align: center;
+}
+
+.adp-enhanced-modal h2 {
+  color: var(--global-blue);
+  font-size: 1.1em;
+  font-weight: initial;
+  text-align: left;
+}
+
+.adp-enhanced-modal p {
+  text-align: center;
+}
+
+.adp-enhanced-modal ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.adp-enhanced-modal li {
+  padding-left: 10px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.adp-enhanced-modal li::before {
+  color: var(--global-light-gray);
+  content: '·';
+  left: 0;
+  margin-right: 10px;
+  position: absolute;
+  transform: translateY(-50%);
+  top: 50%;
+}
+
+.adp-enhanced-modal.show {
+  opacity: 1;
+  transform: translate(-50%, -50% );
+  z-index: 100000 !important;
+}
+
+.adp-enhanced-modal .close-button {
+  color: var(--global-light-gray);
+  cursor: pointer;
+  font-size: 1.5em;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  transition: color 0.3s ease, transform 0.3s ease;
+  transform: rotate(0deg);
+  transform-origin: center;
+}
+
+.adp-enhanced-modal .close-button:hover {
+  color: var(--global-emphasis);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.adp-enhanced-modal-overlay {
+  background: rgba(110, 110, 110, 0);
+  backdrop-filter: blur(0px);
+  cursor: pointer;
+  left: 0;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  transition: background 0.3s ease, backdrop-filter 0.3 ease !important;
+  width: 100%;
+  z-index:  99999 !important;
+}
+
+.adp-enhanced-modal-overlay.show {
+  background: radial-gradient(circle, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(10px);
+  display: block;
+}
+
+.adp-settings-checkbox {
+  margin-top: 15px;
+}
+
 .adp-settings-help-icon {
   font-size:  1.2em !important;
   margin-right: 5px;
@@ -173,6 +354,7 @@ const CSS = `
 
 .adp-settings-time-input-help-icon:hover {
   color: var(--global-emphasis);
+  z-index: 10000;
 }
 
 .adp-settings-time-input-help-icon::before {
@@ -189,7 +371,6 @@ const CSS = `
   transition: background-color 0.5s, opacity 0.3s, transform 0.3s;
   visibility: hidden;
   width: 200px;
-  z-index: 1;
 }
 
 .adp-settings-time-input-help-icon:hover::before {
@@ -208,7 +389,7 @@ const CSS = `
   margin-top: 55px;
 }
 
-.cumulated-daily-delta {
+.cumulated-weekly-delta {
   font-weight: initial;
 }
 
@@ -291,126 +472,6 @@ const CSS = `
   font-size: 0.8em;
   position: relative;
   top: 2px;
-}
-
-.enhanced-modal {
-  background-color: var(--global-white);
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  left: 50%;
-  margin: 0px;
-  max-width: 400px;
-  min-width: 300px;
-  min-height: 100px;
-  opacity: 0;
-  padding: 20px;
-  position: fixed;
-  top: 50%;
-  transform: translate(-50%, -100%);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  width: 100%;
-  z-index: -100000 !important;
-}
-
-.enhanced-modal h1 {
-  text-align: center;
-}
-
-.enhanced-modal h2 {
-  color: var(--global-blue);
-  font-size: 1.1em;
-  font-weight: initial;
-  text-align: left;
-}
-
-.enhanced-modal p {
-  text-align: center;
-}
-
-.enhanced-modal ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.enhanced-modal li {
-  padding-left: 10px;
-  position: relative;
-  margin-bottom: 8px;
-}
-
-.enhanced-modal li::before {
-  color: var(--global-light-gray);
-  content: '·';
-  left: 0;
-  margin-right: 10px;
-  position: absolute;
-  transform: translateY(-50%);
-  top: 50%;
-}
-
-.enhanced-modal.show {
-  opacity: 1;
-  transform: translate(-50%, -50% );
-  z-index: 100000 !important;
-}
-
-.enhanced-modal .close-button {
-  color: var(--global-light-gray);
-  cursor: pointer;
-  font-size: 1.5em;
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  transition: color 0.3s ease, transform 0.3s ease;
-  transform: rotate(0deg);
-  transform-origin: center;
-}
-
-.enhanced-modal .close-button:hover {
-  color: var(--global-emphasis);
-  transform: rotate(90deg) scale(1.1);
-}
-
-.enhanced-modal-overlay {
-  background: rgba(110, 110, 110, 0);
-  backdrop-filter: blur(0px);
-  cursor: pointer;
-  left: 0;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  transition: background 0.3s ease, backdrop-filter 0.3 ease !important;
-  width: 100%;
-  z-index:  99999 !important;
-}
-
-.enhanced-modal-overlay.show {
-  background: radial-gradient(circle, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(10px);
-  display: block;
-}
-
-.hours-minutes-input {
-  border: 2px solid var(--global-light-gray);
-  border-radius: 5px;
-  display: inline;
-  font-size: 1em;
-  font-weight: initial;
-  height: 35px;
-  outline: none;
-  text-align: center;
-  transition: border 0.1s ease;
-  width: 75px;
-}
-
-.hours-minutes-input:focus {
-  border: 3px solid var(--global-emphasis);
-  outline: none;
-}
-
-.hours-minutes-input-label {
-  font-size: 0.9em;
 }
 
 .inputs-group {

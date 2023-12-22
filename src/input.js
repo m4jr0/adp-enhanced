@@ -73,7 +73,7 @@ function hoursMinutesInputKeyUp (event) {
 
   let rawValue = cleanNonDigits(event.currentTarget.value)
   event.currentTarget.value = processHoursMinutesInputValue(rawValue, keyCode)
-  const id = event.currentTarget.id;
+  const id = event.currentTarget.id
 
   if (HoursMinutesInput.hoursMinutesInputKeyUpCallbacks_.hasOwnProperty(id)) {
     HoursMinutesInput.hoursMinutesInputKeyUpCallbacks_[id](event.currentTarget)
@@ -91,15 +91,19 @@ function hoursMinutesInputFocusOut (event) {
     parseIntOrGetDefault(hoursMinutes[0]),
     parseIntOrGetDefault(hoursMinutes[1])
   )
-  
-  const id = event.currentTarget.id;
 
-  if (HoursMinutesInput.hoursMinutesInputFocusOutCallbacks_.hasOwnProperty(id)) {
-    HoursMinutesInput.hoursMinutesInputFocusOutCallbacks_[id](event.currentTarget)
+  const id = event.currentTarget.id
+
+  if (
+    HoursMinutesInput.hoursMinutesInputFocusOutCallbacks_.hasOwnProperty(id)
+  ) {
+    HoursMinutesInput.hoursMinutesInputFocusOutCallbacks_[id](
+      event.currentTarget
+    )
   }
 }
 
-function setUpHoursMinutesInputs (query = '.hours-minutes-input') {
+function setUpHoursMinutesInputs (query = '.adp-enhanced-hours-minutes-input') {
   for (const hoursMinutesInputEl of document.querySelectorAll(query)) {
     setUpHoursMinutesInput(hoursMinutesInputEl)
   }
@@ -120,6 +124,53 @@ function setHoursMinutesInputKeyUpCallback (id, callback) {
 
 function setHoursMinutesInputFocusOutCallback (id, callback) {
   HoursMinutesInput.hoursMinutesInputFocusOutCallbacks_[id] = callback
+}
+
+function getHoursMinutesInput (
+  id = null,
+  value = null,
+  label = null,
+  onKeyUpCallback = null,
+  onFocusOutCallback = null
+) {
+  if (id !== null) {
+    if (onKeyUpCallback !== null) {
+      setHoursMinutesInputKeyUpCallback(id, onKeyUpCallback)
+    }
+
+    if (onFocusOutCallback !== null) {
+      setHoursMinutesInputFocusOutCallback(id, onFocusOutCallback)
+    }
+  }
+
+  value = value !== null ? `value="${value}"` : ''
+  const idAttr = id === null ? '' : `id="${id}"`
+  const labelEl =
+    id !== null && label !== null
+      ? `<label class="adp-enhanced-hours-minutes-input-label"  for="${id}">${label}</label>`
+      : ''
+  return `${labelEl}<input ${idAttr} class="adp-enhanced-hours-minutes-input vdl-textbox ng-touched ng-dirty ng-valid" type="text" placeholder="hh:mm" inputmode="text" ${value}>`
+}
+
+function getButtonInput (id, label) {
+  return `<button id="${id}" class="adp-enhanced-button-input" >${label}</button>`
+}
+
+function getCheckboxInput (id, value = false, label = null) {
+  const isLabel = label !== null
+  const labelEl = isLabel
+    ? `<span class="adp-enhanced-checkbox-input-label">${label}</span>`
+    : ''
+
+  const checkedAttr = value ? 'checked' : ''
+
+  return `<div class="adp-enhanced-checkbox-input">
+    <label class="switch" for="${id}">
+      <input type="checkbox" id="${id}" ${checkedAttr}/>
+      <div class="slider round"></div>
+    </label>
+    ${labelEl}
+  </div>`
 }
 
 // >:3 ???
