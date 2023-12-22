@@ -47,6 +47,12 @@ function getVersionData () {
 
 function getExtraHours () {
   return new Promise((resolve, reject) => {
+    if (Global.isDebugMode() && ADebug.isBeginningExtraTimeOverride()) {
+      AdpData.beginningExtraTime = ADebug.FORCED_BEGINNING_EXTRA_TIME
+      resolve()
+      return
+    }
+
     const ajaxUrl = `${window.location.origin}/time/v3/workers/${
       AdpData.associateOid
     }/time-off-balances?$filter=balanceAsOfDate%20eq%20%27${formatDateToYYYYMMDD(
@@ -144,6 +150,11 @@ function getAssociateOid () {
 
 function getCalendarTimes () {
   return new Promise((resolve, reject) => {
+    if (Global.isDebugMode() && ADebug.isCalendarTimesOverride()) {
+      resolve(ADebug.FORCED_CALENDAR_TIMES)
+      return
+    }
+
     const ajaxUrl = `${
       window.location.origin
     }/v1_0/O/A/timeEntryDetails?dateRange=${formatDateToYYYYMMDD(
@@ -160,8 +171,6 @@ function getCalendarTimes () {
         } catch (error) {
           reject()
         }
-
-        resolve()
       }
     }
 
@@ -184,6 +193,11 @@ function getCalendarTimes () {
 
 function getCalendarEvents () {
   return new Promise((resolve, reject) => {
+    if (Global.isDebugMode() && ADebug.isCalendarEventsOverride()) {
+      resolve(ADebug.FORCED_CALENDAR_EVENTS)
+      return
+    }
+
     const ajaxUrl = `${
       window.location.origin
     }/v1_0/O/A/calendarDetail/myCalendar?startdate=${formatDateToYYYYMMDD(
@@ -337,14 +351,18 @@ function getTimePairDescriptionFromAdp (codeName, dayPeriodValue = null) {
   return description
 }
 
+function getNationalHolidayPair (dayData) {
+  const pair = new LeaveTimePair(dayData.index)
+  pair.push(convertSecondsToDate(DateConsts.getDefaultDayTime()))
+  pair.description = 'Jour férié'
+  pair.isExtraTimeConsumed = false
+  return pair
+}
+
 function getResolvedTimePair (dayData, codeName, dayPeriodValue) {
   if (!isSpecificTimePair(codeName)) {
     return null
   }
-
-  const isMorning = dayPeriodValue === 'M'
-  const isAfternoon = dayPeriodValue === 'A'
-  const isDay = dayPeriodValue === 'J'
 
   switch (dayPeriodValue) {
     case 'M':
@@ -377,4 +395,12 @@ function getResolvedTimePair (dayData, codeName, dayPeriodValue) {
     duration,
     getTimePairDescriptionFromAdp(codeName, dayPeriodValue)
   )
+}
+
+function isExtraTimeConsumed (codeName) {
+  if (codeName === 'RV') {
+    return true
+  }
+
+  return false
 }

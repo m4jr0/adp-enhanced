@@ -9,6 +9,15 @@ class DateUtils {
   static SATURDAY_LABEL = 'saturday'
   static SUNDAY_LABEL = 'sunday'
   static UNKNOWN_LABEL = '???'
+
+  static MONDAY_INDEX = 0
+  static TUESDAY_INDEX = 1
+  static WEDNESDAY_INDEX = 2
+  static THURSDAY_INDEX = 3
+  static FRIDAY_INDEX = 4
+  static SATURDAY_INDEX = 5
+  static SUNDAY_INDEX = 6
+  static UNKNOWN_INDEX = -1
 }
 
 class TimePair {
@@ -49,6 +58,7 @@ class TimePair {
   to = null
   description = null
   previousPair = null
+  isExtraTimeConsumed = false
 
   constructor (dayIndex, previousPair, fromPair = null) {
     this.id = `${this.constructor.name}_${++TimePair.ID_COUNTER}`
@@ -267,6 +277,7 @@ class TimePair {
     newPair.from = this.from === null ? null : copyOrGenerateDate(this.from)
     newPair.to = this.to === null ? null : copyOrGenerateDate(this.to)
     newPair.description = this.description
+    newPair.isExtraTimeConsumed = this.isExtraTimeConsumed
     newPair.normalize()
     TimePair.normalizedPairs_[this.id] = newPair
     return newPair
@@ -352,19 +363,45 @@ function getNow (isYearMonthAndDayStrip = false, isRealNowForced = false) {
     now = realNow
   }
 
-  if (Global.isNowOverride()) {
-    now = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      Global.FORCED_HOURS,
-      Global.FORCED_MINUTES,
-      0,
-      0
-    )
+  if (Global.isDebugMode()) {
+    if (ADebug.isNowOverride()) {
+      now = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        ADebug.FORCED_HOURS,
+        ADebug.FORCED_MINUTES,
+        0,
+        0
+      )
+    }
+
+    if (ADebug.isDayOverride()) {
+      const currentDay = now.getDay()
+      const diff =
+        ((getDayIndexFromDayLabel(ADebug.FORCED_DAY) + 1) % 7) - currentDay
+      const newDate = now.getDate() + diff
+
+      now = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        newDate,
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds(),
+        now.getMilliseconds()
+      )
+    }
   }
 
   return isYearMonthAndDayStrip ? stripYearMonthAndDay(now) : now
+}
+
+function getNowInSeconds (
+  isYearMonthAndDayStrip = false,
+  isRealNowForced = false
+) {
+  return convertDateToSeconds(getNow(isYearMonthAndDayStrip, isRealNowForced))
 }
 
 function shiftDateWithSeconds (date, seconds) {
@@ -630,6 +667,7 @@ function getCustomLeaveTimePair (
   const pair = new constructor(dayIndex)
   pair.push(convertSecondsToDate(duration))
   pair.description = description
+  pair.isExtraTimeConsumed = isExtraTimeConsumed(codeName)
   return pair
 }
 
@@ -814,6 +852,16 @@ class DateConsts {
       hours: Settings.getDefault(SettingsKeys.TIME_AFTERNOON_HOURS),
       minutes: Settings.getDefault(SettingsKeys.TIME_AFTERNOON_MINUTES)
     })
+  }
+
+  static getDayTime () {
+    return DateConsts.getMorningTime() + DateConsts.getAfternoonTime()
+  }
+
+  static getDefaultDayTime () {
+    return (
+      DateConsts.getDefaultMorningTime() + DateConsts.getDefaultAfternoonTime()
+    )
   }
 
   static getMinimumBeginningWorkingTime () {

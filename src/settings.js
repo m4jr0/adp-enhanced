@@ -134,6 +134,38 @@ function getSettingsHtml () {
             )}
           </div>
 
+          ${getTitle('Heures supplémentaires', 'fas fa-clock')}
+          <div class="inputs-group">
+            ${handleTimeInput(
+              'time-highest-weekly-extra-time-input',
+              SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_HOURS,
+              SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_MINUTES,
+              'Max (semaine)',
+              "Nombre maximal d'heures supplémentaires gagnées sur une semaine",
+              null,
+              onTimeHighestWeeklyExtraTimeFocusOutCallback
+            )}
+            ${handleTimeInput(
+              'time-highest-total-extra-time-input',
+              SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_HOURS,
+              SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_MINUTES,
+              'Max (mois)',
+              "Nombre total maximal d'heures supplémentaires en fin de mois",
+              null,
+              onTimeHighestMonthlyExtraTimeFocusOutCallback
+            )}
+          </div>
+
+          <div class="inputs-group">
+          ${handleCheckboxInput(
+            'try-to-zero-out-extra-hours-balance-input',
+            'Réduire les heures à zéro',
+            'Ajuste les prédictions pour ramener le plus possible les heures supplémentaires à zéro',
+            SettingsKeys.ARE_EXTRA_HOURS_ZEROED_OUT,
+            onTryToZeroOutExtraHoursBalanceCallback
+          )}
+          </div>
+
           ${getTitle('Tout réinitialiser', 'fas fa-bomb')}
           <div class="inputs-group">
             ${handleButtonInput(
@@ -208,15 +240,45 @@ function handleButtonInput (id, label, description, callback) {
     descriptionEl = `<span class="adp-settings-button-input-help-icon" data-tooltip="${description}"><i class="fa fa-question-circle"></i></span>`
   }
 
-  return `<div>${descriptionEl}<button id="${id}" class="adp-settings-button-input" >${label}</button></div>`
+  return `<div>${descriptionEl}${getButtonInput(id, label)}</div>`
 }
 
-function bindButtonCallbacks () {
+function handleCheckboxInput (id, label, description, key, callback) {
+  SettingsInternal.boundCheckboxInputs[id] = {
+    key: key,
+    callback: callback
+  }
+
+  let descriptionEl = ''
+
+  if (description !== null) {
+    descriptionEl = `<span class="adp-settings-button-input-help-icon" data-tooltip="${description}"><i class="fa fa-question-circle"></i></span>`
+  }
+
+  return `<div class="adp-settings-checkbox">${descriptionEl}${getCheckboxInput(
+    id,
+    Settings.get(key),
+    label
+  )}</div>`
+}
+
+function bindCallbacks () {
   for (const buttonId in SettingsInternal.boundButtons) {
     if (SettingsInternal.boundButtons.hasOwnProperty(buttonId)) {
       document
         .querySelector(`#${buttonId}`)
         .addEventListener('click', SettingsInternal.boundButtons[buttonId])
+    }
+  }
+
+  for (const checkboxId in SettingsInternal.boundCheckboxInputs) {
+    if (SettingsInternal.boundCheckboxInputs.hasOwnProperty(checkboxId)) {
+      document
+        .querySelector(`#${checkboxId}`)
+        .addEventListener(
+          'change',
+          SettingsInternal.boundCheckboxInputs[checkboxId].callback
+        )
     }
   }
 }
@@ -674,6 +736,53 @@ function onTimeAfternoonFocusOutCallback (element) {
   Settings.set(SettingsKeys.TIME_AFTERNOON_MINUTES, dateObj.minutes)
 }
 
+function onTimeHighestWeeklyExtraTimeFocusOutCallback (element) {
+  const hoursMinutes = element.value.split(':')
+
+  let dateObj = {
+    hours: parseIntOrGetDefault(hoursMinutes[0]),
+    minutes: parseIntOrGetDefault(hoursMinutes[1])
+  }
+
+  const timeInSeconds = convertDateObjToSeconds(dateObj)
+
+  if (timeInSeconds < 0) {
+    dateObj.hours = 0
+    dateObj.minutes = 0
+  }
+
+  Settings.set(SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_HOURS, dateObj.hours)
+  Settings.set(SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_MINUTES, dateObj.minutes)
+}
+
+function onTimeHighestMonthlyExtraTimeFocusOutCallback (element) {
+  const hoursMinutes = element.value.split(':')
+
+  let dateObj = {
+    hours: parseIntOrGetDefault(hoursMinutes[0]),
+    minutes: parseIntOrGetDefault(hoursMinutes[1])
+  }
+
+  const timeInSeconds = convertDateObjToSeconds(dateObj)
+
+  if (timeInSeconds < 0) {
+    dateObj.hours = 0
+    dateObj.minutes = 0
+  }
+
+  Settings.set(SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_HOURS, dateObj.hours)
+  Settings.set(SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_MINUTES, dateObj.minutes)
+}
+
+function onTryToZeroOutExtraHoursBalanceCallback (event) {
+  const element = event.target
+
+  Settings.set(
+    SettingsKeys.ARE_EXTRA_HOURS_ZEROED_OUT,
+    document.querySelector(`#${element.id}`).checked
+  )
+}
+
 function onResetEverythingCallback () {
   shakeElement(document.querySelector('#adp-settings-modal'))
   Settings.resetEverything()
@@ -687,6 +796,13 @@ function onResetEverythingCallback () {
           Settings.get(keyPair.hours),
           Settings.get(keyPair.minutes)
         )
+    }
+  }
+
+  for (const checkboxInputId in SettingsInternal.boundCheckboxInputs) {
+    if (SettingsInternal.boundCheckboxInputs.hasOwnProperty(checkboxInputId)) {
+      const key = SettingsInternal.boundCheckboxInputs[checkboxInputId].key
+      document.querySelector(`#${checkboxInputId}`).checked = Settings.get(key)
     }
   }
 }
@@ -818,6 +934,7 @@ class SettingsKeys {
     'ADP_ENHANCED_TIME_HIGHEST_TOTAL_EXTRA_HOURS'
   static TIME_HIGHEST_TOTAL_EXTRA_MINUTES =
     'ADP_ENHANCED_TIME_HIGHEST_TOTAL_EXTRA_MINUTES'
+  static ARE_EXTRA_HOURS_ZEROED_OUT = 'ADP_ENHANCED_ARE_EXTRA_HOURS_ZEROED_OUT'
 }
 
 class SettingsInternal {
@@ -857,10 +974,12 @@ class SettingsInternal {
     [SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_HOURS]: 3,
     [SettingsKeys.TIME_HIGHEST_WEEKLY_EXTRA_MINUTES]: 0,
     [SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_HOURS]: 10,
-    [SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_MINUTES]: 0
+    [SettingsKeys.TIME_HIGHEST_TOTAL_EXTRA_MINUTES]: 0,
+    [SettingsKeys.ARE_EXTRA_HOURS_ZEROED_OUT]: false
   }
 
   static boundTimeInputs = {}
+  static boundCheckboxInputs = {}
   static boundButtons = {}
 }
 
@@ -869,7 +988,7 @@ function setupSettings () {
   settingsContainer.innerHTML = getSettingsHtml()
   document.body.appendChild(settingsContainer)
   setUpHoursMinutesInputs()
-  bindButtonCallbacks()
+  bindCallbacks()
 
   handleModal(
     document.querySelector('#adp-settings-btn'),

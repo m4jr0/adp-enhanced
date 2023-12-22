@@ -146,7 +146,7 @@ async function load () {
     setupSettings()
     loadIntro()
   } catch (error) {
-    if (Global.IS_DEBUG) {
+    if (Global.isDebugMode()) {
       throw error
     }
 

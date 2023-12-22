@@ -1,16 +1,9 @@
 class Global {
   static ADP_APP_NAME = GM_info.script.name
   static ADP_ENHANCED_VERSION = GM_info.script.version
-  static IS_DEBUG = false
-  static FORCED_HOURS = -1
-  static FORCED_MINUTES = -1
 
-  static isNowOverride () {
-    return (
-      Global.IS_DEBUG &&
-      Global.FORCED_HOURS !== -1 &&
-      Global.FORCED_MINUTES !== -1
-    )
+  static isDebugMode () {
+    return typeof ADebug === 'function' && ADebug.IS_DEBUG
   }
 }
 
@@ -36,19 +29,18 @@ class DayData {
   specialTimePairs = []
   morningEndPair = null
   afternoonBeginningPair = null
-  cumulatedDailyDelta = 0
   cumulatedWeeklyDelta = 0
   predictedCumulatedWeeklyDelta = 0
   dailyLeavingTime = 0
   dailyTimeLeft = 0
-  weeklyTimeLeft = 0
   remainingMorningBreakTime = 0
   remainingAfternoonBreakTime = 0
 
   constructor (index) {
     this.index = index
     this.label = getDayLabelFromDayIndex(this.index)
-    this.refresh()
+    this.remainingMorningBreakTime = DateConsts.getMorningBreakTime()
+    this.remainingAfternoonBreakTime = DateConsts.getAfternoonBreakTime()
   }
 
   isAfternoon () {
@@ -59,17 +51,42 @@ class DayData {
     this.normalizedPairs = []
     this.morningEndPair = null
     this.afternoonBeginningPair = null
-    this.cumulatedDailyDelta = 0
     this.cumulatedWeeklyDelta = 0
     this.predictedCumulatedWeeklyDelta = 0
     this.dailyLeavingTime = 0
     this.dailyTimeLeft = 0
-    this.weeklyTimeLeft = 0
     this.remainingMorningBreakTime = DateConsts.getMorningBreakTime()
     this.remainingAfternoonBreakTime = DateConsts.getAfternoonBreakTime()
 
     this.refreshTotalTime()
+
+    if (this.date.getDate() === 1) {
+      AdpData.beginningExtraTime = Math.min(
+        AdpData.beginningExtraTime,
+        DateConsts.getHighestMonthlyExtraTime()
+      )
+    }
+
+    if (this.index > DateUtils.WORKDAY_COUNT - 1) {
+      return
+    }
+
     this.refreshLeavingTimes()
+
+    if (this.index === DateUtils.WORKDAY_COUNT - 1) {
+      const delta = Math.min(
+        this.predictedCumulatedWeeklyDelta - AdpData.beginningExtraTime,
+        DateConsts.getHighestWeeklyExtraTime()
+      )
+
+      AdpData.predictedEndingExtraTimeOffset +=
+        AdpData.beginningExtraTime + delta - this.predictedCumulatedWeeklyDelta
+
+      this.predictedCumulatedWeeklyDelta = Math.min(
+        this.predictedCumulatedWeeklyDelta,
+        DateConsts.getHighestMonthlyExtraTime()
+      )
+    }
   }
 
   refreshTotalTime () {
@@ -105,30 +122,41 @@ class DayData {
       const normalizedPair = timePair.getNormalizedCopy()
       this.normalizedPairs.push(normalizedPair)
       this.totalTime += normalizedPair.getDeltaInSeconds()
+
+      if (normalizedPair.isExtraTimeConsumed) {
+        AdpData.predictedEndingExtraTimeOffset -=
+          normalizedPair.getDeltaInSeconds()
+      }
     })
 
     this.totalTime = Math.max(0, this.totalTime)
-    this.cumulatedWeeklyDelta = this.totalTime
 
-    if (this.index !== 0) {
-      this.cumulatedWeeklyDelta +=
+    if (this.index !== DateUtils.MONDAY_INDEX) {
+      this.cumulatedWeeklyDelta =
         AdpData.days[this.index - 1].cumulatedWeeklyDelta
+      this.predictedCumulatedWeeklyDelta =
+        AdpData.days[this.index - 1].predictedCumulatedWeeklyDelta
+    } else if (Settings.get(SettingsKeys.ARE_EXTRA_HOURS_ZEROED_OUT)) {
+      this.predictedCumulatedWeeklyDelta = this.cumulatedWeeklyDelta =
+        AdpData.beginningExtraTime
+    } else {
+      this.predictedCumulatedWeeklyDelta = this.cumulatedWeeklyDelta = 0
     }
 
-    this.cumulatedDailyDelta =
-      this.cumulatedWeeklyDelta -
-      DateConsts.getDailyRequiredTime() * (this.index + 1)
+    this.cumulatedWeeklyDelta += this.totalTime
+    this.predictedCumulatedWeeklyDelta += this.totalTime
+
+    if (this.index <= AdpData.dayIndex) {
+      this.cumulatedWeeklyDelta -= DateConsts.getDailyRequiredTime()
+      this.predictedCumulatedWeeklyDelta -= DateConsts.getDailyRequiredTime()
+    }
   }
 
   refreshLeavingTimes () {
-    const previousWeeklyTimeLeft =
-      this.index > 0 ? AdpData.days[this.index - 1].weeklyTimeLeft : 0
-
     if (
       this.index < AdpData.dayIndex ||
       this.index > DateUtils.WORKDAY_COUNT - 1
     ) {
-      this.weeklyTimeLeft += previousWeeklyTimeLeft
       return
     }
 
@@ -147,45 +175,19 @@ class DayData {
 
     this.dailyLeavingTime = dailyLeavingTimeData.leavingTime
 
-    if (this.index == AdpData.dayIndex) {
-      this.weeklyTimeLeft =
-        dailyRequiredTime * (this.index + 1) -
-        this.cumulatedWeeklyDelta +
-        previousWeeklyTimeLeft
-    } else {
-      const previousPredictedCumulatedWeeklyDelta =
-        this.index > 0
-          ? AdpData.days[this.index - 1].predictedCumulatedWeeklyDelta
-          : 0
+    let timeLeft = -this.predictedCumulatedWeeklyDelta
 
-      this.weeklyTimeLeft =
-        previousPredictedCumulatedWeeklyDelta + dailyRequiredTime
+    if (this.index > AdpData.dayIndex) {
+      timeLeft += DateConsts.getDailyRequiredTime()
     }
 
     const weeklyLeavingTimeData = this.generateLeavingTime(
-      this.weeklyTimeLeft,
+      timeLeft,
       fromStrippedTime
     )
 
-    this.predictedCumulatedWeeklyDelta = weeklyLeavingTimeData.timeLeft
     this.weeklyLeavingTime = weeklyLeavingTimeData.leavingTime
-
-    if (
-      this.isAfternoon() &&
-      !AdpData.isWorking() &&
-      this.normalizedPairs.length > 0
-    ) {
-      this.predictedCumulatedWeeklyDelta +=
-        Math.min(
-          DateConsts.getMaximumLeavingWorkingTime(),
-          weeklyLeavingTimeData.leavingTime
-        ) -
-        convertDateToSeconds(
-          stripYearMonthAndDay(
-            this.normalizedPairs[this.normalizedPairs.length - 1].to
-          )
-        )
-    }
+    this.predictedCumulatedWeeklyDelta = -weeklyLeavingTimeData.timeLeft
   }
 
   generateLeavingTime (timeLeft, fromStrippedTime) {
@@ -205,10 +207,19 @@ class DayData {
     }
 
     if (timeLeft <= 0) {
-      return new LeavingTimeData(
-        Math.max(fromStrippedTime, DateConsts.getMinimumLeavingWorkingTime()),
-        timeLeft
+      const leavingTime = Math.max(
+        fromStrippedTime,
+        DateConsts.getMinimumLeavingWorkingTime()
       )
+
+      const timeWorked =
+        DateConsts.getMinimumLeavingWorkingTime() -
+        fromStrippedTime -
+        (DateConsts.getMorningBreakTime() +
+          DateConsts.getAfternoonBreakTime() +
+          DateConsts.getRecommendedLunchBreakTime())
+
+      return new LeavingTimeData(leavingTime, timeLeft - timeWorked)
     }
 
     let leavingTime =
@@ -238,8 +249,7 @@ class DayData {
 
     return new LeavingTimeData(
       effectiveLeavingTime,
-      Math.min(DateConsts.getMaximumLeavingWorkingTime(), leavingTime) -
-        effectiveLeavingTime
+      leavingTime - effectiveLeavingTime
     )
   }
 }
@@ -255,9 +265,13 @@ class AdpData {
   static days = {}
   static totalTime = 0
   static beginningExtraTime = 0
+  static predictedEndingExtraTime = 0
+  static predictedEndingExtraTimeOffset = 0
 
   static reset () {
     AdpData.totalTime = 0
+    AdpData.predictedEndingExtraTime = 0
+    AdpData.predictedEndingExtraTimeOffset = 0
   }
 
   static setup () {
@@ -339,6 +353,7 @@ class AdpData {
     }
 
     const dayData = this.days[dayIndex]
+
     return TimePair.getNormalized(
       dayData.timePairs[dayData.timePairs.length - 1].id
     ).isActive()
@@ -351,13 +366,23 @@ class AdpData {
   static refresh () {
     AdpData.reset()
 
-    for (let dayIndex = 0; dayIndex < DateUtils.WORKDAY_COUNT; ++dayIndex) {
+    for (let dayIndex = 0; dayIndex < DateUtils.WEEKDAY_COUNT; ++dayIndex) {
       const dayData = this.days[dayIndex]
       dayData.refresh()
       AdpData.totalTime += dayData.totalTime
     }
 
     AdpData.totalTime = Math.max(0, AdpData.totalTime)
+
+    AdpData.predictedEndingExtraTime =
+      AdpData.days[DateUtils.WORKDAY_COUNT - 1].predictedCumulatedWeeklyDelta +
+      AdpData.predictedEndingExtraTimeOffset
+
+    if (!Settings.get(SettingsKeys.ARE_EXTRA_HOURS_ZEROED_OUT)) {
+      AdpData.predictedEndingExtraTime +=
+        AdpData.beginningExtraTime +
+        AdpData.days[AdpData.dayIndex].predictedCumulatedWeeklyDelta
+    }
   }
 
   static getDayTime (dayIndex) {
